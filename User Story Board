@@ -1,0 +1,42 @@
+Project Vision and User Stories
+
+Product Vision
+For busy individuals, students, and budget-conscious consumers who struggle to decide what to eat based on their mood, cravings, or financial constraints, 
+Bytez is a personalized food recommendation app that suggests meals tailored to emotional state, taste preferences, and budget patterns. Unlike generic 
+food apps that only filter by cuisine or location, our product uses mood input and spending behavior to deliver smarter, more personalized, and financially 
+aware meal suggestions.
+
+User Stories
+Damien: 
+1.	As a student on a budget, I want to filter restaurants by price so that I can find affordable places to eat.
+2.	As a person planning a special occasion, I want restaurant suggestions based on the event so that I can choose a place that fits the mood.
+3.	As a tourist or visitor, I want to see restaurants near attractions so that I can eat somewhere convenient while exploring.
+
+Emilio:
+1.	As a user, I want to select or input my current mood so that I can receive food suggestions that match how I feel.
+2.	As someone who is financially conscious, I want to set a budget or track my spending habits so that I can receive food recommendations that fit 
+    within my financial limits. 
+3.	As a person with the same taste, I want to receive personalized meal suggestions based on my past choices and cravings so that I can make quicker 
+    and more satisfying decisions about what to eat.
+
+Rafael:
+1.	As a partygoer, I want to recommend places with a fun atmosphere so that I could bring more awareness.
+2.	As a recommender, I want to be able to review restaurants and give them various ratings based on price, cleanliness, etc so that I know the full 
+    vibe of the place.
+3.	As a reviewer, I would want to filter the restaurants with my top rated reviews so that I don’t go to a place that I know I would dislike.
+ 
+Brian G.:
+1.	As a person who interacts with many apps, I want a clean interface that is user-friendly and the buttons make sense that showcases the function so 
+    that it does what I want it to do.
+2.	As a person who interacts with many barebones apps, I want an app interface that is colorful and looks fun and non-industrial so that it's not boring 
+    and a pain to look at.
+3.	As a person who likes to find hidden restaurants, I want a way where I can list off undiscovered restaurants that might be too small or speakeasies 
+    that are often not listed on Google so that I can remember their location and how much I liked it.
+
+Jay:
+1.	As a Cal Poly student planning a first date, I want to filter restaurants by occasion (date night, casual, game day, family dinner) so that I can narrow 
+    down to spots that match the vibe without scrolling through every restaurant in town.
+2.	As a SLO local who eats out a lot, I want to filter by cuisine and minimum star rating at the same time so that I can find a highly-rated spot in a 
+    specific cuisine without scrolling through low-rated ones.
+3.	As a visitor new to SLO, I want to click on a restaurant and see its details (address, hours, price range, menu samples, photos) so that I can decide if 
+    it's worth going without having to look it up on Google.
