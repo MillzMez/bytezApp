@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "./Header";
 import FilterSidebar from "./FilterSidebar";
 import RestaurantList from "./RestaurantList";
+import LoginPage from "./LoginPage";
 
 const RESTAURANTS = [
   { id: 1, name: "Casa Marina", address: "Downtown SLO", cuisine: "Seafood & Italian", price: 2, rating: 4.5, reviews: 324, occasions: ["Date Night", "Special Occasion"] },
@@ -25,9 +26,14 @@ function MyApp() {
     maxPrice: 4,
     minRating: 0,
   });
+  const [loggedIn, setLoggedIn] = useState(false); 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recommended");
   const [favorites, setFavorites] = useState([]);
+
+  if (!loggedIn) {
+    return <LoginPage onLogin={() => setLoggedIn(true)} />;  //
+  }
 
   function updateFilter(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value }));
