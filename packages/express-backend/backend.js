@@ -1,9 +1,19 @@
-const express = require("express");
-const { MongoClient } = require("mongodb");
-const multer = require("multer");
-const XLSX = require("xlsx");
-require("dotenv").config();
-const cors = require("cors");
+import MongoClient from "mongodb";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
+import restaurantService from "./services/restaurant-service.js";
+import multer from "multer";
+import XLSX from "xlsx";
+
+dotenv.config();
+const { MONGODB_URI } = process.env;
+
+mongoose.set("debug", true);
+mongoose
+  .connect(MONGODB_URI)
+  .catch((error) => console.log(error));
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
@@ -12,33 +22,32 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const client = new MongoClient(process.env.MONGODB_URI);
-let restaurantsCollection;
-
-async function connectDB() {
-  try {
-    await client.connect();
-    const db = client.db("bytezApp");
-    restaurantsCollection = db.collection("restaurants");
-    console.log("Connected to MongoDB");
-  } catch (err) {
-    console.error("MongoDB connection error:", err);
-  }
-}
-
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
 
-app.get("/api/restaurants", async (req, res) => {
-  try {
-    const restaurants = await restaurantsCollection
-      .find({})
-      .toArray();
-    res.json(restaurants);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.get("/restaurants", (req, res) => {
+  restaurantService
+    .getRestaurants()
+    .then((restaurant) => {
+      res.status(200).send(restaurant);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(404).send("resource not found.");
+    });
+});
+
+app.post("/restaurants", (req, res) => {
+  const restaurantToAdd = req.body;
+  restaurantService
+    .addRestaurant(restaurantToAdd)
+    .then((restaurant) => {
+      res.status(201).send(restaurant);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 });
 
 app.post(
@@ -83,8 +92,6 @@ app.post(
   }
 );
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
