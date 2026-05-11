@@ -34,6 +34,22 @@ function getRestaurants(
   if (priceRange) {
     query.priceRange = priceRange;
   }
+  if (reviewStars) {
+    query.reviewStars = {
+      $gte: reviewStars
+    };
+  }
+  if (reviewCount) {
+    query.reviewCount = {
+      $gte: reviewCount
+    };
+  }
+  if (averagePriceSpent) {
+    query.averagePriceSpent = {
+      $lte: Math.max(averagePriceSpent - 2, 0),
+      $gte: averagePriceSpent + 2
+    };
+  }
   if (occasion) {
     query.occasion = occasion;
   }
