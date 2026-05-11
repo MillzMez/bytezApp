@@ -10,12 +10,34 @@ mongoose
   })
   .catch((error) => console.log(error));
 
-function getRestaurants(name) {
-  let promise;
-  if (name === undefined) {
-    promise = restaurantModel.find();
+function getRestaurants(
+  name,
+  address,
+  cuisine,
+  priceRange,
+  reviewStars,
+  reviewCount,
+  averagePriceSpent,
+  occasion
+) {
+  // TODO implement number filters
+  const query = {};
+  if (cuisine) {
+    query.cuisine = cuisine;
   }
-  return promise;
+  if (name) {
+    query.name = name;
+  }
+  if (address) {
+    query.address = address;
+  }
+  if (priceRange) {
+    query.priceRange = priceRange;
+  }
+  if (occasion) {
+    query.occasion = occasion;
+  }
+  return restaurantModel.find(query);
 }
 
 function addRestaurant(restaurant) {
@@ -24,7 +46,17 @@ function addRestaurant(restaurant) {
   return promise;
 }
 
+function findRestaurantByID(id) {
+  return restaurantModel.findById(id);
+}
+
+function deleteRestaurantById(id) {
+  return restaurantModel.findByIdAndDelete(id);
+}
+
 export default {
   getRestaurants,
-  addRestaurant
+  addRestaurant,
+  findRestaurantByID,
+  deleteRestaurantById
 };

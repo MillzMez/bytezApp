@@ -27,14 +27,44 @@ app.get("/", (req, res) => {
 });
 
 app.get("/restaurants", (req, res) => {
+  const name = req.query.name;
+  const address = req.query.address;
+  const cuisine = req.query.cuisine;
+  const priceRange = req.query.priceRange;
+  const reviewStars = req.query.reviewStars;
+  const reviewCount = req.query.reviewCount;
+  const averagePriceSpent = req.query.averagePriceSpent;
+  const occasion = req.query.occasion;
+
   restaurantService
-    .getRestaurants()
+    .getRestaurants(
+      name,
+      address,
+      cuisine,
+      priceRange,
+      reviewStars,
+      reviewCount,
+      averagePriceSpent,
+      occasion
+    )
     .then((restaurant) => {
       res.status(200).send(restaurant);
     })
     .catch((error) => {
       console.log(error);
       res.status(404).send("resource not found.");
+    });
+});
+
+app.get("/restaurants/:id", (req, res) => {
+  const id = req.params.id;
+  restaurantService
+    .findRestaurantByID(id)
+    .then((restaurant) => {
+      res.send(restaurant);
+    })
+    .catch((error) => {
+      console.log(error);
     });
 });
 
@@ -91,6 +121,19 @@ app.post(
     }
   }
 );
+
+app.delete("/restaurants/:id", (req, res) => {
+  const id = req.params.id;
+  restaurantService
+    .deleteRestaurantById(id)
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(404).send("Resource not found.");
+    });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
