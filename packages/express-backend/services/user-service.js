@@ -1,7 +1,15 @@
 import UserModel from "../models/users.js";
+import bcrypt from "bcryptjs";
 
-function createUser(user) {
-  const userToAdd = new UserModel(user);
+async function createUser(user) {
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+
+  const userToAdd = new UserModel({
+    ...user,
+    password: hashedPassword
+  });
+
   return userToAdd.save();
 }
 
@@ -19,6 +27,25 @@ function findUserById(id) {
 
 function findUserByUsername(username) {
   return UserModel.findOne({ username });
+}
+
+async function verifyUserPassword(username, password) {
+  const user = await UserModel.findOne({ username });
+
+  if (!user) {
+    return null;
+  }
+
+  const passwordMatches = await bcrypt.compare(
+    password,
+    user.password
+  );
+
+  if (!passwordMatches) {
+    return null;
+  }
+
+  return user;
 }
 
 function addFavoriteRestaurant(userId, restaurantId) {
@@ -53,6 +80,7 @@ export default {
   getUsers,
   findUserById,
   findUserByUsername,
+  verifyUserPassword,
   addFavoriteRestaurant,
   addRestaurantWithNotes
 };
