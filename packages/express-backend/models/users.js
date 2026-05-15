@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+const SavedRestaurantSchema = new mongoose.Schema(
+  {
+    restaurant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+      required: true
+    },
+    notes: {
+      type: String,
+      trim: true,
+      default: ""
+    }
+  },
+  { _id: false }
+);
+
 const UserSchema = new mongoose.Schema(
   {
     username: {
@@ -7,9 +23,20 @@ const UserSchema = new mongoose.Schema(
       required: true,
       trim: true,
       unique: true
-    }
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    favoriteRestaurants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Restaurant"
+      }
+    ],
+    addedRestaurants: [SavedRestaurantSchema]
   },
-  { collection: "users_list" }
+  { timestamps: true }
 );
 
 const User = mongoose.model("User", UserSchema);
