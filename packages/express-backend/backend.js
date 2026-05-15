@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import restaurantService from "./services/restaurant-service.js";
+import userService from "./services/user-service.js";
 import Restaurant from "./models/restaurants.js";
 import multer from "multer";
 import XLSX from "xlsx";
@@ -134,6 +135,51 @@ app.delete("/restaurants/:id", (req, res) => {
       console.log(error);
       res.status(404).send("Resource not found.");
     });
+});
+
+app.post("/users/signup", async (req, res) => {
+  try {
+    const newUser = await userService.createUser(req.body);
+
+    res.status(201).send({
+      message: "User created successfully",
+      user: {
+        _id: newUser._id,
+        username: newUser.username
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error.message);
+  }
+});
+
+app.post("/users/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await userService.verifyUserPassword(
+      username,
+      password
+    );
+
+    if (!user) {
+      return res.status(401).send({
+        message: "Invalid username or password"
+      });
+    }
+
+    res.status(200).send({
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        username: user.username
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
+  }
 });
 
 app.listen(PORT, () => {
