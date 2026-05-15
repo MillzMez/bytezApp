@@ -1,14 +1,4 @@
-import mongoose from "mongoose";
 import restaurantModel from "../models/restaurants.js";
-
-mongoose.set("debug", true);
-
-mongoose
-  .connect("mongodb://localhost:27017/restaurants", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .catch((error) => console.log(error));
 
 function getRestaurants(
   name,
@@ -46,8 +36,8 @@ function getRestaurants(
   }
   if (averagePriceSpent) {
     query.averagePriceSpent = {
-      $lte: Math.max(averagePriceSpent - 2, 0),
-      $gte: averagePriceSpent + 2
+      $gte: Math.max(averagePriceSpent - 2, 0),
+      $lte: averagePriceSpent + 2
     };
   }
   if (occasion) {

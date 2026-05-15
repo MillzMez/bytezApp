@@ -1,9 +1,9 @@
-import MongoClient from "mongodb";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import restaurantService from "./services/restaurant-service.js";
+import Restaurant from "./models/restaurants.js";
 import multer from "multer";
 import XLSX from "xlsx";
 
@@ -13,6 +13,7 @@ const { MONGODB_URI } = process.env;
 mongoose.set("debug", true);
 mongoose
   .connect(MONGODB_URI)
+  .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((error) => console.log(error));
 
 const app = express();
@@ -65,6 +66,7 @@ app.get("/restaurants/:id", (req, res) => {
     })
     .catch((error) => {
       console.log(error);
+      res.status(400).send(error.message);
     });
 });
 
@@ -108,9 +110,8 @@ app.post(
         notes: row["Notes"] || ""
       }));
 
-      await restaurantsCollection.deleteMany({});
-      const result =
-        await restaurantsCollection.insertMany(restaurants);
+      await Restaurant.deleteMany({});
+      const result = await Restaurant.insertMany(restaurants);
 
       res.json({
         message: "Restaurants uploaded successfully",
