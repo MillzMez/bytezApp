@@ -42,10 +42,11 @@ const RestaurantSchema = new mongoose.Schema(
     },
     notes: {
       type: String,
-      trim: true
+      trim: true,
+      default: ""
     }
   },
-  { collection: "restaurant_list" }
+  { timestamps: true }
 );
 
 const Restaurant = mongoose.model(
