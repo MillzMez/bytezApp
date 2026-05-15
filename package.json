@@ -1,11 +1,15 @@
 {
-  "name": "307bytez",
+  "name": "bytez-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "frontend": "npm run dev --workspace=react-frontend",
+    "backend": "npm run dev --workspace=express-backend",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "install-all": "npm install --workspaces"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +17,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "prettier": "^3.8.3"
   }
 }
