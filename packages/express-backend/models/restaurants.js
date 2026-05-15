@@ -37,8 +37,9 @@ const RestaurantSchema = new mongoose.Schema(
       default: 0
     },
     occasion: {
-      type: [String],
-      default: []
+      type: String,
+      trim: true,
+      default: ""
     },
     notes: {
       type: String,
