@@ -94,6 +94,20 @@ function FilterSidebar({ filters, onFilterChange }) {
           </label>
         ))}
       </div>
+
+      <div className="filter-section">
+        <div className="filter-section-header">
+          <h3>Other</h3>
+        </div>
+        <label className="filter-label">
+          <input
+            type="checkbox"
+            checked={filters.hasNotes}
+            onChange={(e) => onFilterChange("hasNotes", e.target.checked)}
+          />
+          Has notes
+        </label>
+      </div>
     </aside>
   );
 }
