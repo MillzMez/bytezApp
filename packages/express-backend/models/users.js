@@ -1,19 +1,37 @@
 import mongoose from "mongoose";
 
-const SavedRestaurantSchema = new mongoose.Schema(
+// Way to save user's personal notes about restaurants
+const RestaurantNoteSchema = new mongoose.Schema(
   {
     restaurant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Restaurant",
       required: true
     },
-    notes: {
+    note: {
       type: String,
       trim: true,
       default: ""
     }
   },
-  { _id: false }
+  { timestamps: true }
+);
+
+// Way to save user's restaurant mood choices
+const RestaurantMoodSchema = new mongoose.Schema(
+  {
+    restaurant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+      required: true
+    },
+    mood: {
+      type: String,
+      trim: true,
+      required: true
+    }
+  },
+  { timestamps: true }
 );
 
 const UserSchema = new mongoose.Schema(
@@ -24,7 +42,7 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       unique: true
     },
-    password: {
+    hashedPassword: {
       type: String,
       required: true
     },
@@ -34,7 +52,8 @@ const UserSchema = new mongoose.Schema(
         ref: "Restaurant"
       }
     ],
-    addedRestaurants: [SavedRestaurantSchema]
+    personalNotes: [RestaurantNoteSchema],
+    moods: [RestaurantMoodSchema]
   },
   { timestamps: true }
 );
