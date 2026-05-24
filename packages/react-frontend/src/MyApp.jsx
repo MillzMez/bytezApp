@@ -26,8 +26,8 @@ const INITIAL_RESTAURANTS = [
 function MyApp() {
   const [restaurants, setRestaurants] = useState(INITIAL_RESTAURANTS);
   const [filters, setFilters] = useState({
-    cuisine: "All",
-    occasion: "All",
+    cuisines: [],
+    occasions: [],
     maxPrice: 4,
     minRating: 0,
     moods: [],
@@ -70,29 +70,29 @@ function MyApp() {
     ]);
   }
 
+  function updateRestaurant(id, changes) {
+	    setRestaurants((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, ...changes } : r))
+      );
+  }
+
   const filtered = restaurants.filter((r) => {
-    if (filters.cuisine !== "All" && !r.cuisine.includes(filters.cuisine))
-      return false;
-    if (r.price > filters.maxPrice) return false;
-    if (r.rating < filters.minRating) return false;
-    if (
-      filters.occasion !== "All" &&
-      !r.occasions.includes(filters.occasion)
-    )
-      return false;
-    if (
-      filters.moods.length &&
-      !filters.moods.some((m) => r.mood?.includes(m))
-    )
-      return false;
-    if (filters.hasNotes && !(r.notes && r.notes.trim())) return false;
-    if (
-      searchQuery &&
-      !r.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
-    return true;
+	    if (filters.cuisines.length && !filters.cuisines.some((c) => r.cuisine.includes(c)))
+		      return false;
+	    if (r.price > filters.maxPrice) return false;
+	    if (r.rating < filters.minRating) return false;
+	    if (filters.occasions.length && !filters.occasions.some((o) => r.occasions.includes(o)))
+		      return false;
+	    if (filters.moods.length && !filters.moods.some((m) => r.mood?.includes(m)))
+		      return false;
+	    if (filters.hasNotes && !(r.notes && r.notes.trim())) return false;
+	    if (
+		        searchQuery &&
+		        !r.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+		        !r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+		      )
+		      return false;
+	    return true;
   });
 
   const sorted = [...filtered].sort((a, b) => {
@@ -111,7 +111,9 @@ function MyApp() {
 
   return (
     <div className="app-wrapper">
-      <Header favoriteCount={favorites.length} />
+      <Header favoriteCount={favorites.length} 
+	  favorites={favorites}
+	  restaurants={restaurants}/>
       <div className="app-body">
         <FilterSidebar filters={filters} onFilterChange={updateFilter} />
         <RestaurantList
@@ -122,6 +124,7 @@ function MyApp() {
           onSortChange={setSortBy}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
+	  onUpdateRestaurant={updateRestaurant}
         />
         <MoodSidebar
           selectedMoods={filters.moods}
