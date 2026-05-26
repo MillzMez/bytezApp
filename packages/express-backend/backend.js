@@ -100,15 +100,14 @@ app.post(
       const rows = XLSX.utils.sheet_to_json(worksheet);
 
       const restaurants = rows.map((row) => ({
-        name: row["Name"],
-        address: row["Address"],
-        cuisine: row["Cuisine"],
-        priceRange: row["Price Range"],
-        reviewStars: Number(row["Review Stars (out of 5)"]),
-        reviewCount: Number(row["Review Count"]),
-        averagePriceSpent: Number(row["Average Price Spent"]),
-        occasion: row["Occasion"],
-        notes: row["Notes"] || ""
+        name: row.name,
+        address: row.address,
+        cuisine: row.cuisine,
+        priceRange: row.priceRange,
+        reviewStars: Number(row.reviewStars),
+        reviewCount: Number(row.reviewCount),
+        averagePriceSpent: Number(row.averagePriceSpent),
+        occasion: row.occasion
       }));
 
       await Restaurant.deleteMany({});
