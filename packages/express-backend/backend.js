@@ -8,6 +8,11 @@ import Restaurant from "./models/restaurants.js";
 import multer from "multer";
 import XLSX from "xlsx";
 
+import {
+  generateAccessToken,
+  authenticateUser
+} from "./auth.js";
+
 dotenv.config();
 const { MONGODB_URI } = process.env;
 
@@ -71,7 +76,7 @@ app.get("/restaurants/:id", (req, res) => {
     });
 });
 
-app.post("/restaurants", (req, res) => {
+app.post("/restaurants", authenticateUser, (req, res) => {
   const restaurantToAdd = req.body;
   restaurantService
     .addRestaurant(restaurantToAdd)
@@ -85,6 +90,7 @@ app.post("/restaurants", (req, res) => {
 
 app.post(
   "/api/restaurants/upload",
+  authenticateUser,
   upload.single("file"),
   async (req, res) => {
     try {
@@ -123,7 +129,7 @@ app.post(
   }
 );
 
-app.delete("/restaurants/:id", (req, res) => {
+app.delete("/restaurants/:id", authenticateUser, (req, res) => {
   const id = req.params.id;
   restaurantService
     .deleteRestaurantById(id)
@@ -139,9 +145,11 @@ app.delete("/restaurants/:id", (req, res) => {
 app.post("/users/signup", async (req, res) => {
   try {
     const newUser = await userService.createUser(req.body);
+    const token = generateAccessToken(newUser);
 
     res.status(201).send({
       message: "User created successfully",
+      token,
       user: {
         _id: newUser._id,
         username: newUser.username
@@ -168,8 +176,11 @@ app.post("/users/login", async (req, res) => {
       });
     }
 
+    const token = generateAccessToken(user);
+
     res.status(200).send({
       message: "Login successful",
+      token,
       user: {
         _id: user._id,
         username: user.username

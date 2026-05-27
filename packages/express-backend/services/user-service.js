@@ -1,13 +1,15 @@
 import UserModel from "../models/users.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 async function createUser(user) {
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+  const hashedPassword = await bcrypt.hash(user.password, 10);
 
   const userToAdd = new UserModel({
-    ...user,
-    password: hashedPassword
+    username: user.username,
+    hashedPassword,
+    favoriteRestaurants: [],
+    personalNotes: [],
+    moods: []
   });
 
   return userToAdd.save();
@@ -16,13 +18,15 @@ async function createUser(user) {
 function getUsers() {
   return UserModel.find()
     .populate("favoriteRestaurants")
-    .populate("addedRestaurants.restaurant");
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
 }
 
 function findUserById(id) {
   return UserModel.findById(id)
     .populate("favoriteRestaurants")
-    .populate("addedRestaurants.restaurant");
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
 }
 
 function findUserByUsername(username) {
@@ -36,16 +40,12 @@ async function verifyUserPassword(username, password) {
     return null;
   }
 
-  const passwordMatches = await bcrypt.compare(
+  const passwordsMatch = await bcrypt.compare(
     password,
-    user.password
+    user.hashedPassword
   );
 
-  if (!passwordMatches) {
-    return null;
-  }
-
-  return user;
+  return passwordsMatch ? user : null;
 }
 
 function addFavoriteRestaurant(userId, restaurantId) {
@@ -55,24 +55,26 @@ function addFavoriteRestaurant(userId, restaurantId) {
     { new: true }
   )
     .populate("favoriteRestaurants")
-    .populate("addedRestaurants.restaurant");
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
 }
 
-function addRestaurantWithNotes(userId, restaurantId, notes) {
+function addPersonalNote(userId, restaurantId, note) {
   return UserModel.findByIdAndUpdate(
     userId,
     {
       $push: {
-        addedRestaurants: {
+        personalNotes: {
           restaurant: restaurantId,
-          notes
+          note
         }
       }
     },
     { new: true }
   )
     .populate("favoriteRestaurants")
-    .populate("addedRestaurants.restaurant");
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
 }
 
 export default {
@@ -82,5 +84,5 @@ export default {
   findUserByUsername,
   verifyUserPassword,
   addFavoriteRestaurant,
-  addRestaurantWithNotes
+  addPersonalNote
 };
