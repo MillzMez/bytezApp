@@ -8,6 +8,12 @@ import FabStack from "./FabStack";
 import AddRestaurantModal from "./AddRestaurantModal";
 import RandomPickModal from "./RandomPickModal";
 
+// Backend API base URL
+const API_PREFIX = "http://localhost:3000";
+
+// Used when the user is not authenticated
+const INVALID_TOKEN = "INVALID_TOKEN";
+
 const INITIAL_RESTAURANTS = [
   { id: 1, name: "Casa Marina", address: "Downtown SLO", cuisine: "Seafood & Italian", price: 2, rating: 4.5, reviews: 324, occasions: ["Date Night", "Special Occasion"], mood: ["Romantic", "Cozy"], notes: "Try the linguine vongole — best in town." },
   { id: 2, name: "Luna Trattoria", address: "Higuera St.", cuisine: "Italian", price: 3, rating: 4.7, reviews: 456, occasions: ["Date Night", "Special Occasion"], mood: ["Romantic", "Celebratory"], notes: "Reservation recommended on weekends." },
@@ -24,15 +30,19 @@ const INITIAL_RESTAURANTS = [
 ];
 
 function MyApp() {
-  const [restaurants, setRestaurants] = useState(INITIAL_RESTAURANTS);
+  const [restaurants, setRestaurants] = useState(
+    INITIAL_RESTAURANTS
+  );
   const [filters, setFilters] = useState({
     cuisines: [],
     occasions: [],
     maxPrice: 4,
     minRating: 0,
     moods: [],
-    hasNotes: false,
+    hasNotes: false
   });
+  const [token, setToken] = useState(INVALID_TOKEN);
+  const [message, setMessage] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recommended");
@@ -40,8 +50,81 @@ function MyApp() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [randomPick, setRandomPick] = useState(null);
 
+  // Save JWT token in state for current session
+  function saveToken(newToken) {
+    setToken(newToken);
+    setLoggedIn(true);
+  }
+
+  // Attach Authorization header to protected backend requests
+  function addAuthHeader(headers = {}) {
+    if (token === INVALID_TOKEN) {
+      return headers;
+    }
+
+    return {
+      ...headers,
+      Authorization: `Bearer ${token}`
+    };
+  }
+
+  // Authenticate existing user and retrieve JWT token
+  async function loginUser(creds) {
+    try {
+      const response = await fetch(
+        `${API_PREFIX}/users/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(creds)
+        }
+      );
+
+      if (response.status === 200) {
+        const data = await response.json();
+        saveToken(data.token);
+        setMessage("Login successful");
+      } else {
+        setMessage("Invalid username or password");
+      }
+    } catch (error) {
+      setMessage(`Login error: ${error.message}`);
+    }
+  }
+
+  // Create new user account and automatically log them in
+  async function signupUser(creds) {
+    try {
+      const response = await fetch(
+        `${API_PREFIX}/users/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(creds)
+        }
+      );
+
+      if (response.status === 201) {
+        const data = await response.json();
+        saveToken(data.token);
+        setMessage("Signup successful");
+      } else {
+        setMessage("Signup failed");
+      }
+    } catch (error) {
+      setMessage(`Signup error: ${error.message}`);
+    }
+  }
+
+  // Show login/signup screen until user is authenticated
   if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+    return (
+      <LoginPage
+        onLogin={loginUser}
+        onSignup={signupUser}
+        message={message}
+      />
+    );
   }
 
   function updateFilter(key, value) {
@@ -53,46 +136,92 @@ function MyApp() {
       ...prev,
       moods: prev.moods.includes(mood)
         ? prev.moods.filter((m) => m !== mood)
-        : [...prev.moods, mood],
+        : [...prev.moods, mood]
     }));
   }
 
   function toggleFavorite(id) {
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((f) => f !== id)
+        : [...prev, id]
     );
   }
 
-  function addRestaurant(newR) {
-    setRestaurants((prev) => [
-      ...prev,
-      { ...newR, id: Math.max(0, ...prev.map((r) => r.id)) + 1 },
-    ]);
+  // Add restaurant through protected backend endpoint using JWT token
+  async function addRestaurant(newR) {
+    try {
+      const response = await fetch(
+        `${API_PREFIX}/restaurants`,
+        {
+          method: "POST",
+          headers: addAuthHeader({
+            "Content-Type": "application/json"
+          }),
+          body: JSON.stringify(newR)
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        const savedRestaurant = await response.json();
+        setRestaurants((prev) => [
+          ...prev,
+          {
+            ...newR,
+            ...savedRestaurant,
+            id:
+              savedRestaurant._id ||
+              Math.max(0, ...prev.map((r) => r.id)) + 1
+          }
+        ]);
+        setMessage("Restaurant added successfully");
+      } else if (response.status === 401) {
+        setMessage("You must be logged in to add restaurants");
+      } else {
+        setMessage("Could not add restaurant");
+      }
+    } catch (error) {
+      setMessage(`Add restaurant error: ${error.message}`);
+    }
   }
 
   function updateRestaurant(id, changes) {
-	    setRestaurants((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, ...changes } : r))
-      );
+    setRestaurants((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...changes } : r))
+    );
   }
 
   const filtered = restaurants.filter((r) => {
-	    if (filters.cuisines.length && !filters.cuisines.some((c) => r.cuisine.includes(c)))
-		      return false;
-	    if (r.price > filters.maxPrice) return false;
-	    if (r.rating < filters.minRating) return false;
-	    if (filters.occasions.length && !filters.occasions.some((o) => r.occasions.includes(o)))
-		      return false;
-	    if (filters.moods.length && !filters.moods.some((m) => r.mood?.includes(m)))
-		      return false;
-	    if (filters.hasNotes && !(r.notes && r.notes.trim())) return false;
-	    if (
-		        searchQuery &&
-		        !r.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-		        !r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
-		      )
-		      return false;
-	    return true;
+    if (
+      filters.cuisines.length &&
+      !filters.cuisines.some((c) => r.cuisine.includes(c))
+    )
+      return false;
+    if (r.price > filters.maxPrice) return false;
+    if (r.rating < filters.minRating) return false;
+    if (
+      filters.occasions.length &&
+      !filters.occasions.some((o) => r.occasions.includes(o))
+    )
+      return false;
+    if (
+      filters.moods.length &&
+      !filters.moods.some((m) => r.mood?.includes(m))
+    )
+      return false;
+    if (filters.hasNotes && !(r.notes && r.notes.trim()))
+      return false;
+    if (
+      searchQuery &&
+      !r.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) &&
+      !r.cuisine
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    )
+      return false;
+    return true;
   });
 
   const sorted = [...filtered].sort((a, b) => {
@@ -106,16 +235,23 @@ function MyApp() {
 
   function pickRandom() {
     if (sorted.length === 0) return;
-    setRandomPick(sorted[Math.floor(Math.random() * sorted.length)]);
+    setRandomPick(
+      sorted[Math.floor(Math.random() * sorted.length)]
+    );
   }
 
   return (
     <div className="app-wrapper">
-      <Header favoriteCount={favorites.length} 
-	  favorites={favorites}
-	  restaurants={restaurants}/>
+      <Header
+        favoriteCount={favorites.length}
+        favorites={favorites}
+        restaurants={restaurants}
+      />
       <div className="app-body">
-        <FilterSidebar filters={filters} onFilterChange={updateFilter} />
+        <FilterSidebar
+          filters={filters}
+          onFilterChange={updateFilter}
+        />
         <RestaurantList
           restaurants={sorted}
           searchQuery={searchQuery}
@@ -124,7 +260,7 @@ function MyApp() {
           onSortChange={setSortBy}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
-	  onUpdateRestaurant={updateRestaurant}
+          onUpdateRestaurant={updateRestaurant}
         />
         <MoodSidebar
           selectedMoods={filters.moods}

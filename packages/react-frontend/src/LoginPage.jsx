@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function LoginPage({ onLogin }) {
+function LoginPage({ onLogin, onSignup, message }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -8,7 +8,19 @@ function LoginPage({ onLogin }) {
 
   function handleSubmit() {
     if (!email || !password) return;
-    onLogin();
+
+    const creds = {
+      username: email,
+      password,
+    };
+
+    if (isSignUp) {
+      onSignup(creds);
+    }
+
+    else {
+      onLogin(creds);
+    }
   }
 
   return (
@@ -41,8 +53,8 @@ function LoginPage({ onLogin }) {
         )}
         <input
           className="login-input"
-          type="email"
-          placeholder="Email"
+          type="text"
+          placeholder="Username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -57,6 +69,8 @@ function LoginPage({ onLogin }) {
         <button className="login-submit" onClick={handleSubmit}>
           {isSignUp ? "Create Account" : "Log In"}
         </button>
+
+        {message && <p className="login-message">{message}</p>}
       </div>
     </div>
   );
