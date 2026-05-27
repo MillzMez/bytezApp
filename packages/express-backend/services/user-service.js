@@ -77,6 +77,24 @@ function addPersonalNote(userId, restaurantId, note) {
     .populate("moods.restaurant");
 }
 
+function addMood(userId, restaurantId, mood) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $push: {
+        moods: {
+          restaurant: restaurantId,
+          mood
+        }
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
 export default {
   createUser,
   getUsers,
@@ -84,5 +102,6 @@ export default {
   findUserByUsername,
   verifyUserPassword,
   addFavoriteRestaurant,
-  addPersonalNote
+  addPersonalNote,
+  addMood
 };
