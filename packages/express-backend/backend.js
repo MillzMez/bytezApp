@@ -34,25 +34,25 @@ app.get("/", (req, res) => {
 });
 
 app.get("/restaurants", (req, res) => {
-  const name = req.query.name;
-  const address = req.query.address;
   const cuisine = req.query.cuisine;
+  const search = req.query.search;
+  const sortBy = req.query.sortBy;
   const priceRange = req.query.priceRange;
   const reviewStars = req.query.reviewStars;
+  const occasion = req.query.occasion;
   const reviewCount = req.query.reviewCount;
   const averagePriceSpent = req.query.averagePriceSpent;
-  const occasion = req.query.occasion;
 
   restaurantService
     .getRestaurants(
-      name,
-      address,
+      search,
       cuisine,
       priceRange,
       reviewStars,
       reviewCount,
       averagePriceSpent,
-      occasion
+      occasion,
+      sortBy
     )
     .then((restaurant) => {
       res.status(200).send(restaurant);

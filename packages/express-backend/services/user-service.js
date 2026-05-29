@@ -95,6 +95,111 @@ function addMood(userId, restaurantId, mood) {
     .populate("moods.restaurant");
 }
 
+function getSavedRestaurants(userId) {
+  return UserModel.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(userId)
+      }
+    },
+    {
+      $project: {
+        favoriteRestaurants: 1,
+        personalNotes: 1,
+        moods: 1,
+
+        allRestaurantIds: {
+          $setUnion: [
+            "$favoriteRestaurants",
+            {
+              $map: {
+                input: "$personalNotes",
+                as: "note",
+                in: "$$note.restaurant"
+              }
+            },
+            {
+              $map: {
+                input: "$moods",
+                as: "mood",
+                in: "$$mood.restaurant"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    {
+      $lookup: {
+        from: "restaurants",
+        localField: "allRestaurantIds",
+        foreignField: "_id",
+        as: "restaurants"
+      }
+    },
+    {
+      $project: {
+        restaurants: {
+          $map: {
+            input: "$restaurants",
+            as: "restaurant",
+            in: {
+              $mergeObjects: [
+                "$$restaurant",
+                {
+                  favorite: {
+                    $in: [
+                      "$$restaurant._id",
+                      "favoriteRestaurants"
+                    ]
+                  },
+                  notes: {
+                    $map: {
+                      input: {
+                        $filter: {
+                          input: "$personalNotes",
+                          as: "note",
+                          cond: {
+                            $eq: [
+                              "$$note.restaurant",
+                              "$$restaurant._id"
+                            ]
+                          }
+                        }
+                      },
+                      as: "note",
+                      in: "$$note.note"
+                    }
+                  },
+                  moods: {
+                    $map: {
+                      input: {
+                        $filter: {
+                          input: "$moods",
+                          as: "mood",
+                          cond: {
+                            $eq: [
+                              "$$mood.restaurant",
+                              "$$restaurant._id"
+                            ]
+                          }
+                        }
+                      },
+                      as: "mood",
+                      in: "$$mood.mood"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]);
+}
+
 export default {
   createUser,
   getUsers,

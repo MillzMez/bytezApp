@@ -1,8 +1,7 @@
 import restaurantModel from "../models/restaurants.js";
 
 function getRestaurants(
-  name,
-  address,
+  search,
   cuisine,
   priceRange,
   reviewStars,
@@ -11,30 +10,41 @@ function getRestaurants(
   occasion,
   sortBy
 ) {
+  // TODO implement number filters
   const query = {};
-  // Case-insensitive cuisine search
+  const prices = ["$", "$$", "$$$", "$$$$"];
+
+  if (search) {
+    query.$or = [
+      {
+        name: {
+          $regex: search,
+          $options: "i"
+        }
+      },
+      {
+        cuisine: {
+          $regex: search,
+          $options: "i"
+        }
+      },
+      {
+        address: {
+          $regex: search,
+          $options: "i"
+        }
+      }
+    ];
+  }
   if (cuisine) {
     query.cuisine = {
-      $regex: cuisine,
-      $options: "i"
-    };
-  }
-  // Case-insensitive partial restaurant name search
-  if (name) {
-    query.name = {
-      $regex: name,
-      $options: "i"
-    };
-  }
-  // Case-insensitive partial address search
-  if (address) {
-    query.address = {
-      $regex: address,
-      $options: "i"
+      $in: cuisine.split(",")
     };
   }
   if (priceRange) {
-    query.priceRange = priceRange;
+    query.priceRange = {
+      $in: prices[priceRange]
+    };
   }
   if (reviewStars) {
     query.reviewStars = {
@@ -52,35 +62,30 @@ function getRestaurants(
       $lte: averagePriceSpent + 2
     };
   }
-  // Case-insensitive occasion search
   if (occasion) {
     query.occasion = {
-      $regex: occasion,
-      $options: "i"
+      $in: occasion.split(",")
     };
   }
-  // Sorting options for restaurant results
   const sortQuery = {};
-
-  if (sortBy === "rating") {
-    sortQuery.reviewStars = -1;
+  if (sortBy === "rating-desc") {
+    sortQuery.rating = -1;
   }
-
-  if (sortBy === "reviews") {
-    sortQuery.reviewCount = -1;
+  if (sortBy === "rating-asc") {
+    sortQuery.rating = 1;
   }
-
+  if (sortBy === "name") {
+    sortQuery.name = 1;
+  }
   if (sortBy === "priceLow") {
     sortQuery.averagePriceSpent = 1;
   }
-
   if (sortBy === "priceHigh") {
     sortQuery.averagePriceSpent = -1;
   }
-
+  // TODO figure out how to sort by price
   return restaurantModel.find(query).sort(sortQuery);
 }
-
 function addRestaurant(restaurant) {
   const restaurantToAdd = new restaurantModel(restaurant);
   const promise = restaurantToAdd.save();
