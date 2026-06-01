@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "./Header";
 import FilterSidebar from "./FilterSidebar";
 import RestaurantList from "./RestaurantList";
@@ -7,32 +7,16 @@ import MoodSidebar from "./MoodSidebar";
 import FabStack from "./FabStack";
 import AddRestaurantModal from "./AddRestaurantModal";
 import RandomPickModal from "./RandomPickModal";
+import Toast from "./Toast";
+import { fromBackend, toBackend } from "./restaurantAdapter";
 
-// Backend API base URL
 const API_PREFIX = "http://localhost:3000";
-
-// Used when the user is not authenticated
 const INVALID_TOKEN = "INVALID_TOKEN";
-
-const INITIAL_RESTAURANTS = [
-  { id: 1, name: "Casa Marina", address: "Downtown SLO", cuisine: "Seafood & Italian", price: 2, rating: 4.5, reviews: 324, occasions: ["Date Night", "Special Occasion"], mood: ["Romantic", "Cozy"], notes: "Try the linguine vongole — best in town." },
-  { id: 2, name: "Luna Trattoria", address: "Higuera St.", cuisine: "Italian", price: 3, rating: 4.7, reviews: 456, occasions: ["Date Night", "Special Occasion"], mood: ["Romantic", "Celebratory"], notes: "Reservation recommended on weekends." },
-  { id: 3, name: "Olive & Thyme", address: "SLO Farmers Market", cuisine: "Mediterranean", price: 2, rating: 4.3, reviews: 189, occasions: ["Casual", "Family Dinner"], mood: ["Happy", "Comfort"], notes: "" },
-  { id: 4, name: "Sakura Sushi", address: "Foothill Blvd", cuisine: "Asian", price: 2, rating: 4.6, reviews: 512, occasions: ["Date Night", "Casual"], mood: ["Adventurous", "Romantic"], notes: "Omakase on Thursdays only." },
-  { id: 5, name: "The Burger Barn", address: "Osos St.", cuisine: "American", price: 1, rating: 4.2, reviews: 789, occasions: ["Casual", "Game Day"], mood: ["Happy", "Energetic"], notes: "" },
-  { id: 6, name: "Taqueria Santa Cruz", address: "Broad St.", cuisine: "Mexican", price: 1, rating: 4.4, reviews: 631, occasions: ["Casual", "Game Day", "Family Dinner"], mood: ["Energetic", "Happy"], notes: "" },
-  { id: 7, name: "The Steakhouse SLO", address: "Monterey St.", cuisine: "American", price: 4, rating: 4.8, reviews: 203, occasions: ["Special Occasion", "Date Night"], mood: ["Celebratory", "Romantic"], notes: "Dry-aged ribeye is the move." },
-  { id: 8, name: "Green Leaf Cafe", address: "Marsh St.", cuisine: "Vegan", price: 2, rating: 4.1, reviews: 145, occasions: ["Casual", "Family Dinner"], mood: ["Comfort", "Happy"], notes: "" },
-  { id: 9, name: "Spice of India", address: "Santa Rosa St.", cuisine: "Indian", price: 2, rating: 4.5, reviews: 267, occasions: ["Family Dinner", "Date Night"], mood: ["Adventurous", "Comfort"], notes: "Spice levels are no joke — order mild first." },
-  { id: 10, name: "Pacific Catch", address: "Higuera St.", cuisine: "Seafood", price: 3, rating: 4.6, reviews: 388, occasions: ["Date Night", "Special Occasion"], mood: ["Romantic", "Celebratory"], notes: "Patio seats book up fast at sunset." },
-  { id: 11, name: "Firestone Grill", address: "Los Osos Valley Rd", cuisine: "American", price: 1, rating: 4.3, reviews: 1024, occasions: ["Casual", "Game Day", "Family Dinner"], mood: ["Energetic", "Happy"], notes: "" },
-  { id: 12, name: "Noodle House", address: "Johnson Ave.", cuisine: "Asian", price: 1, rating: 4.0, reviews: 298, occasions: ["Casual"], mood: ["Comfort", "Cozy"], notes: "" },
-];
+const TOKEN_STORAGE_KEY = "bytez.token";
 
 function MyApp() {
-  const [restaurants, setRestaurants] = useState(
-    INITIAL_RESTAURANTS
-  );
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     cuisines: [],
     occasions: [],
@@ -41,22 +25,37 @@ function MyApp() {
     moods: [],
     hasNotes: false
   });
-  const [token, setToken] = useState(INVALID_TOKEN);
+  const [token, setToken] = useState(() => {
+    const saved = localStorage.getItem(TOKEN_STORAGE_KEY);
+    return saved || INVALID_TOKEN;
+  });
+  const [loggedIn, setLoggedIn] = useState(() => {
+    return !!localStorage.getItem(TOKEN_STORAGE_KEY);
+  });
   const [message, setMessage] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recommended");
   const [favorites, setFavorites] = useState([]);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [randomPick, setRandomPick] = useState(null);
 
-  // Save JWT token in state for current session
   function saveToken(newToken) {
     setToken(newToken);
     setLoggedIn(true);
+    localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
   }
 
-  // Attach Authorization header to protected backend requests
+  function logout() {
+    setToken(INVALID_TOKEN);
+    setLoggedIn(false);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setRestaurants([]);
+    setFavorites([]);
+    setFavoritesOnly(false);
+    setMessage("Logged out");
+  }
+
   function addAuthHeader(headers = {}) {
     if (token === INVALID_TOKEN) {
       return headers;
@@ -68,7 +67,31 @@ function MyApp() {
     };
   }
 
-  // Authenticate existing user and retrieve JWT token
+  const clearMessage = useCallback(() => setMessage(""), []);
+
+  const loadRestaurants = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_PREFIX}/restaurants`);
+      if (!response.ok) {
+        setMessage("Could not load restaurants");
+        return;
+      }
+      const data = await response.json();
+      setRestaurants(data.map(fromBackend));
+    } catch (error) {
+      setMessage(`Load error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loggedIn) {
+      loadRestaurants();
+    }
+  }, [loggedIn, loadRestaurants]);
+
   async function loginUser(creds) {
     try {
       const response = await fetch(
@@ -92,7 +115,6 @@ function MyApp() {
     }
   }
 
-  // Create new user account and automatically log them in
   async function signupUser(creds) {
     try {
       const response = await fetch(
@@ -116,7 +138,6 @@ function MyApp() {
     }
   }
 
-  // Show login/signup screen until user is authenticated
   if (!loggedIn) {
     return (
       <LoginPage
@@ -142,13 +163,10 @@ function MyApp() {
 
   function toggleFavorite(id) {
     setFavorites((prev) =>
-      prev.includes(id)
-        ? prev.filter((f) => f !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
     );
   }
 
-  // Add restaurant through protected backend endpoint using JWT token
   async function addRestaurant(newR) {
     try {
       const response = await fetch(
@@ -158,23 +176,20 @@ function MyApp() {
           headers: addAuthHeader({
             "Content-Type": "application/json"
           }),
-          body: JSON.stringify(newR)
+          body: JSON.stringify(toBackend(newR))
         }
       );
 
       if (response.status === 201 || response.status === 200) {
-        const savedRestaurant = await response.json();
+        const saved = await response.json();
+        const adapted = fromBackend(saved);
+        // Keep the mood and notes the user typed in the modal since the
+        // backend Restaurant schema does not store them yet.
         setRestaurants((prev) => [
           ...prev,
-          {
-            ...newR,
-            ...savedRestaurant,
-            id:
-              savedRestaurant._id ||
-              Math.max(0, ...prev.map((r) => r.id)) + 1
-          }
+          { ...adapted, mood: newR.mood || [], notes: newR.notes || "" }
         ]);
-        setMessage("Restaurant added successfully");
+        setMessage("Restaurant added");
       } else if (response.status === 401) {
         setMessage("You must be logged in to add restaurants");
       } else {
@@ -185,6 +200,30 @@ function MyApp() {
     }
   }
 
+  async function deleteRestaurant(id) {
+    try {
+      const response = await fetch(
+        `${API_PREFIX}/restaurants/${id}`,
+        {
+          method: "DELETE",
+          headers: addAuthHeader()
+        }
+      );
+
+      if (response.status === 204 || response.ok) {
+        setRestaurants((prev) => prev.filter((r) => r.id !== id));
+        setFavorites((prev) => prev.filter((f) => f !== id));
+        setMessage("Restaurant deleted");
+      } else if (response.status === 401) {
+        setMessage("You must be logged in to delete restaurants");
+      } else {
+        setMessage("Could not delete restaurant");
+      }
+    } catch (error) {
+      setMessage(`Delete error: ${error.message}`);
+    }
+  }
+
   function updateRestaurant(id, changes) {
     setRestaurants((prev) =>
       prev.map((r) => (r.id === id ? { ...r, ...changes } : r))
@@ -192,6 +231,7 @@ function MyApp() {
   }
 
   const filtered = restaurants.filter((r) => {
+    if (favoritesOnly && !favorites.includes(r.id)) return false;
     if (
       filters.cuisines.length &&
       !filters.cuisines.some((c) => r.cuisine.includes(c))
@@ -209,16 +249,11 @@ function MyApp() {
       !filters.moods.some((m) => r.mood?.includes(m))
     )
       return false;
-    if (filters.hasNotes && !(r.notes && r.notes.trim()))
-      return false;
+    if (filters.hasNotes && !(r.notes && r.notes.trim())) return false;
     if (
       searchQuery &&
-      !r.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) &&
-      !r.cuisine
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
+      !r.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
     )
       return false;
     return true;
@@ -235,17 +270,16 @@ function MyApp() {
 
   function pickRandom() {
     if (sorted.length === 0) return;
-    setRandomPick(
-      sorted[Math.floor(Math.random() * sorted.length)]
-    );
+    setRandomPick(sorted[Math.floor(Math.random() * sorted.length)]);
   }
 
   return (
     <div className="app-wrapper">
       <Header
         favoriteCount={favorites.length}
-        favorites={favorites}
-        restaurants={restaurants}
+        favoritesOnly={favoritesOnly}
+        onToggleFavorites={() => setFavoritesOnly((v) => !v)}
+        onLogout={logout}
       />
       <div className="app-body">
         <FilterSidebar
@@ -254,6 +288,7 @@ function MyApp() {
         />
         <RestaurantList
           restaurants={sorted}
+          loading={loading}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           sortBy={sortBy}
@@ -261,6 +296,7 @@ function MyApp() {
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
           onUpdateRestaurant={updateRestaurant}
+          onDeleteRestaurant={deleteRestaurant}
         />
         <MoodSidebar
           selectedMoods={filters.moods}
@@ -283,6 +319,7 @@ function MyApp() {
           onClose={() => setRandomPick(null)}
         />
       )}
+      <Toast message={message} onDismiss={clearMessage} />
     </div>
   );
 }
