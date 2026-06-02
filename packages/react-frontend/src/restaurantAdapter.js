@@ -2,11 +2,17 @@
 // frontend components expect. Backend uses priceRange/reviewStars/etc.,
 // frontend uses price/rating/reviews/occasions.
 
-const PRICE_TO_NUMBER = { "$": 1, "$$": 2, "$$$": 3, "$$$$": 4 };
-const NUMBER_TO_PRICE = { 1: "$", 2: "$$", 3: "$$$", 4: "$$$$" };
+const PRICE_TO_NUMBER = { $: 1, $$: 2, $$$: 3, $$$$: 4 };
+const NUMBER_TO_PRICE = {
+  1: "$",
+  2: "$$",
+  3: "$$$",
+  4: "$$$$"
+};
 
 function parsePrice(priceRange) {
-  if (priceRange in PRICE_TO_NUMBER) return PRICE_TO_NUMBER[priceRange];
+  if (priceRange in PRICE_TO_NUMBER)
+    return PRICE_TO_NUMBER[priceRange];
   const asNumber = Number(priceRange);
   if (asNumber >= 1 && asNumber <= 4) return asNumber;
   return 1;
@@ -44,6 +50,8 @@ export function toBackend(r) {
     reviewStars: Number(r.rating) || 0,
     reviewCount: Number(r.reviews) || 0,
     averagePriceSpent: 0,
-    occasion: Array.isArray(r.occasions) ? r.occasions.join(", ") : ""
+    occasion: Array.isArray(r.occasions)
+      ? r.occasions.join(", ")
+      : ""
   };
 }

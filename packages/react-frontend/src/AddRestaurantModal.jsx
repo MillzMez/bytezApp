@@ -9,14 +9,14 @@ const CUISINES = [
   "Seafood",
   "Vegan",
   "Indian",
-  "Other",
+  "Other"
 ];
 const OCCASIONS = [
   "Date Night",
   "Casual",
   "Game Day",
   "Family Dinner",
-  "Special Occasion",
+  "Special Occasion"
 ];
 const MOODS = [
   "Happy",
@@ -25,7 +25,7 @@ const MOODS = [
   "Romantic",
   "Energetic",
   "Comfort",
-  "Celebratory",
+  "Celebratory"
 ];
 
 function AddRestaurantModal({ onClose, onSubmit }) {
@@ -41,7 +41,9 @@ function AddRestaurantModal({ onClose, onSubmit }) {
 
   function toggleInList(value, list, setter) {
     setter(
-      list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
+      list.includes(value)
+        ? list.filter((v) => v !== value)
+        : [...list, value]
     );
   }
 
@@ -57,7 +59,7 @@ function AddRestaurantModal({ onClose, onSubmit }) {
       reviews: Number(reviews),
       occasions,
       mood,
-      notes: notes.trim(),
+      notes: notes.trim()
     });
     onClose();
   }
@@ -67,7 +69,9 @@ function AddRestaurantModal({ onClose, onSubmit }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={handleBackdropClick}>
+    <div
+      className="modal-backdrop"
+      onClick={handleBackdropClick}>
       <div className="modal">
         <div className="modal-header">
           <h3>Add a restaurant</h3>
@@ -75,8 +79,7 @@ function AddRestaurantModal({ onClose, onSubmit }) {
             type="button"
             className="modal-close"
             onClick={onClose}
-            aria-label="Close"
-          >
+            aria-label="Close">
             ×
           </button>
         </div>
@@ -102,8 +105,7 @@ function AddRestaurantModal({ onClose, onSubmit }) {
             <label>Cuisine</label>
             <select
               value={cuisine}
-              onChange={(e) => setCuisine(e.target.value)}
-            >
+              onChange={(e) => setCuisine(e.target.value)}>
               {CUISINES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -119,7 +121,9 @@ function AddRestaurantModal({ onClose, onSubmit }) {
               max="4"
               step="1"
               value={price}
-              onChange={(e) => setPrice(parseInt(e.target.value))}
+              onChange={(e) =>
+                setPrice(parseInt(e.target.value))
+              }
             />
           </div>
           <div className="form-field">
@@ -151,7 +155,9 @@ function AddRestaurantModal({ onClose, onSubmit }) {
                   <input
                     type="checkbox"
                     checked={occasions.includes(o)}
-                    onChange={() => toggleInList(o, occasions, setOccasions)}
+                    onChange={() =>
+                      toggleInList(o, occasions, setOccasions)
+                    }
                   />
                   {o}
                 </label>
@@ -166,7 +172,9 @@ function AddRestaurantModal({ onClose, onSubmit }) {
                   <input
                     type="checkbox"
                     checked={mood.includes(m)}
-                    onChange={() => toggleInList(m, mood, setMood)}
+                    onChange={() =>
+                      toggleInList(m, mood, setMood)
+                    }
                   />
                   {m}
                 </label>
@@ -185,8 +193,7 @@ function AddRestaurantModal({ onClose, onSubmit }) {
             <button
               type="button"
               className="btn-secondary"
-              onClick={onClose}
-            >
+              onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="btn-primary">

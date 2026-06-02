@@ -1,6 +1,8 @@
 # Bytez
 
-Bytez is a restaurant recommendation web app for discovering restaurants in San Luis Obispo based on mood, cuisine, occasion, and user preferences.
+Bytez is a restaurant recommendation web app for discovering
+restaurants in San Luis Obispo based on mood, cuisine, occasion,
+and user preferences.
 
 ---
 

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No tests configured yet\"",
+    "lint": "npx prettier --check .",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
     "frontend": "npm run dev --workspace=react-frontend",
     "backend": "npm run dev --workspace=express-backend",

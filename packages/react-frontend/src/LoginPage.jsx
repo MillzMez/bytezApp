@@ -11,14 +11,12 @@ function LoginPage({ onLogin, onSignup, message }) {
 
     const creds = {
       username: email,
-      password,
+      password
     };
 
     if (isSignUp) {
       onSignup(creds);
-    }
-
-    else {
+    } else {
       onLogin(creds);
     }
   }
@@ -27,16 +25,22 @@ function LoginPage({ onLogin, onSignup, message }) {
     <div className="login-wrapper">
       <div className="login-card">
         <h1 className="login-logo">Bytez</h1>
-        <p className="login-motto">Log in or sign up to decrypt your cravings</p>
+        <p className="login-motto">
+          Log in or sign up to decrypt your cravings
+        </p>
 
         <div className="login-toggle">
           <button
-            className={!isSignUp ? "toggle-btn active" : "toggle-btn"}
+            className={
+              !isSignUp ? "toggle-btn active" : "toggle-btn"
+            }
             onClick={() => setIsSignUp(false)}>
             Log In
           </button>
           <button
-            className={isSignUp ? "toggle-btn active" : "toggle-btn"}
+            className={
+              isSignUp ? "toggle-btn active" : "toggle-btn"
+            }
             onClick={() => setIsSignUp(true)}>
             Sign Up
           </button>

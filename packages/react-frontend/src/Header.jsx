@@ -1,6 +1,11 @@
 import React from "react";
 
-function Header({ favoriteCount, favoritesOnly, onToggleFavorites, onLogout }) {
+function Header({
+  favoriteCount,
+  favoritesOnly,
+  onToggleFavorites,
+  onLogout
+}) {
   return (
     <header className="header">
       <div className="header-title">
@@ -11,8 +16,11 @@ function Header({ favoriteCount, favoritesOnly, onToggleFavorites, onLogout }) {
         <button
           className={`favorites-btn ${favoritesOnly ? "favorites-btn--active" : ""}`}
           onClick={onToggleFavorites}
-          title={favoritesOnly ? "Show all restaurants" : "Show favorites only"}
-        >
+          title={
+            favoritesOnly
+              ? "Show all restaurants"
+              : "Show favorites only"
+          }>
           {favoritesOnly ? "♥" : "♡"} My Favorites
           {favoriteCount > 0 && ` (${favoriteCount})`}
         </button>

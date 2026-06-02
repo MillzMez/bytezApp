@@ -163,7 +163,9 @@ function MyApp() {
 
   function toggleFavorite(id) {
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((f) => f !== id)
+        : [...prev, id]
     );
   }
 
@@ -187,7 +189,11 @@ function MyApp() {
         // backend Restaurant schema does not store them yet.
         setRestaurants((prev) => [
           ...prev,
-          { ...adapted, mood: newR.mood || [], notes: newR.notes || "" }
+          {
+            ...adapted,
+            mood: newR.mood || [],
+            notes: newR.notes || ""
+          }
         ]);
         setMessage("Restaurant added");
       } else if (response.status === 401) {
@@ -211,11 +217,15 @@ function MyApp() {
       );
 
       if (response.status === 204 || response.ok) {
-        setRestaurants((prev) => prev.filter((r) => r.id !== id));
+        setRestaurants((prev) =>
+          prev.filter((r) => r.id !== id)
+        );
         setFavorites((prev) => prev.filter((f) => f !== id));
         setMessage("Restaurant deleted");
       } else if (response.status === 401) {
-        setMessage("You must be logged in to delete restaurants");
+        setMessage(
+          "You must be logged in to delete restaurants"
+        );
       } else {
         setMessage("Could not delete restaurant");
       }
@@ -231,7 +241,8 @@ function MyApp() {
   }
 
   const filtered = restaurants.filter((r) => {
-    if (favoritesOnly && !favorites.includes(r.id)) return false;
+    if (favoritesOnly && !favorites.includes(r.id))
+      return false;
     if (
       filters.cuisines.length &&
       !filters.cuisines.some((c) => r.cuisine.includes(c))
@@ -249,11 +260,16 @@ function MyApp() {
       !filters.moods.some((m) => r.mood?.includes(m))
     )
       return false;
-    if (filters.hasNotes && !(r.notes && r.notes.trim())) return false;
+    if (filters.hasNotes && !(r.notes && r.notes.trim()))
+      return false;
     if (
       searchQuery &&
-      !r.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+      !r.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) &&
+      !r.cuisine
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
     )
       return false;
     return true;
@@ -270,7 +286,9 @@ function MyApp() {
 
   function pickRandom() {
     if (sorted.length === 0) return;
-    setRandomPick(sorted[Math.floor(Math.random() * sorted.length)]);
+    setRandomPick(
+      sorted[Math.floor(Math.random() * sorted.length)]
+    );
   }
 
   return (

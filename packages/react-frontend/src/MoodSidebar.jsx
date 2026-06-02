@@ -7,7 +7,7 @@ const MOODS = [
   "Romantic",
   "Energetic",
   "Comfort",
-  "Celebratory",
+  "Celebratory"
 ];
 
 function MoodSidebar({ selectedMoods, onToggleMood }) {

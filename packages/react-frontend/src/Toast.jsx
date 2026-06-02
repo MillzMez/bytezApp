@@ -9,12 +9,17 @@ function Toast({ message, onDismiss, duration = 3500 }) {
 
   if (!message) return null;
 
-  const tone = /error|fail|invalid/i.test(message) ? "toast--error" : "toast--ok";
+  const tone = /error|fail|invalid/i.test(message)
+    ? "toast--error"
+    : "toast--ok";
 
   return (
     <div className={`toast ${tone}`} role="status">
       <span>{message}</span>
-      <button className="toast-close" onClick={onDismiss} aria-label="Dismiss">
+      <button
+        className="toast-close"
+        onClick={onDismiss}
+        aria-label="Dismiss">
         ×
       </button>
     </div>

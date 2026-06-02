@@ -7,16 +7,14 @@ function FabStack({ onAdd, onRandom }) {
         className="fab fab-primary"
         onClick={onAdd}
         title="Add restaurant"
-        aria-label="Add restaurant"
-      >
+        aria-label="Add restaurant">
         +
       </button>
       <button
         className="fab"
         onClick={onRandom}
         title="Pick a random restaurant"
-        aria-label="Pick a random restaurant"
-      >
+        aria-label="Pick a random restaurant">
         🎲
       </button>
     </div>
