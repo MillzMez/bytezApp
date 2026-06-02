@@ -192,6 +192,6 @@ app.post("/users/login", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(process.env.PORT || PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
