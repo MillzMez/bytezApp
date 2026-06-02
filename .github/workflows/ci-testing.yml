@@ -2,7 +2,9 @@ name: CI Testing
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 15-complete-te6-continuous-integrationdeployment
 
 jobs:
   build:
