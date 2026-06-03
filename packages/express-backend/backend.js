@@ -54,6 +54,33 @@ app.get("/users/me",
   }
 );
 
+app.get(
+  "/users/me/favorites",
+  authenticateUser,
+  async (req, res) => {
+    const user = await userService.findUserById(req.user.id);
+    res.status(200).send(user.favoriteRestaurants);
+  }
+);
+
+app.get(
+  "/users/me/notes",
+  authenticateUser,
+  async (req, res) => {
+    const user = await userService.findUserById(req.user.id);
+    res.status(200).send(user.personalNotes);
+  }
+);
+
+app.get(
+  "/users/me/moods",
+  authenticateUser,
+  async (req, res) => {
+    const user = await userService.findUserById(req.user.id);
+    res.status(200).send(user.moods);
+  }
+);
+
 app.get("/restaurants", (req, res) => {
   const cuisine = req.query.cuisine;
   const search = req.query.search;
