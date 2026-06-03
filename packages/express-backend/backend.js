@@ -33,6 +33,27 @@ app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
 
+// Protected route for the currently logged-in user.
+// 1. authenticateUser reads the JWT from the Authorization header.
+// 2. The JWT is verified and its payload is stored in req.user.
+// 3. req.user.id contains the user's MongoDB _id from the token.
+// 4. findUserById() loads the full user document from MongoDB.
+// 5. The populated user data is returned to the frontend.
+app.get("/users/me",
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const user = await userService.findUserById(userId);
+
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  }
+);
+
 app.get("/restaurants", (req, res) => {
   const cuisine = req.query.cuisine;
   const search = req.query.search;
