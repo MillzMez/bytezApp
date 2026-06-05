@@ -39,20 +39,17 @@ app.get("/", (req, res) => {
 // 3. req.user.id contains the user's MongoDB _id from the token.
 // 4. findUserById() loads the full user document from MongoDB.
 // 5. The populated user data is returned to the frontend.
-app.get("/users/me",
-  authenticateUser,
-  async (req, res) => {
-    try {
-      const userId = req.user.id;
+app.get("/users/me", authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-      const user = await userService.findUserById(userId);
+    const user = await userService.findUserById(userId);
 
-      res.status(200).send(user);
-    } catch (error) {
-      res.status(500).send(error.message);
-    }
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send(error.message);
   }
-);
+});
 
 app.get(
   "/users/me/favorites",
@@ -81,7 +78,19 @@ app.get(
   }
 );
 
-app.get("/restaurants", (req, res) => {
+app.get("/users/me/saved", authenticateUser, (req, res) => {
+  const userId = req.user.id;
+  userService
+    .getSavedRestaurants(userId)
+    .then((restaurant) => {
+      res.status(200).send(restaurant);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
+app.get("/restaurants", authenticateUser, (req, res) => {
   const cuisine = req.query.cuisine;
   const search = req.query.search;
   const sortBy = req.query.sortBy;
@@ -90,6 +99,9 @@ app.get("/restaurants", (req, res) => {
   const occasion = req.query.occasion;
   const reviewCount = req.query.reviewCount;
   const averagePriceSpent = req.query.averagePriceSpent;
+  const moods = req.query.moods;
+  const hasNotes = req.query.hasNotes;
+  const userId = req.user.id;
 
   restaurantService
     .getRestaurants(
@@ -103,7 +115,21 @@ app.get("/restaurants", (req, res) => {
       sortBy
     )
     .then((restaurant) => {
-      res.status(200).send(restaurant);
+      userService
+        .addUserRestaurantData(
+          restaurant,
+          userId,
+          sortBy,
+          moods,
+          hasNotes
+        )
+        .then((restaurant) => {
+          res.status(200).send(restaurant);
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(404).send("resource not found.");
+        });
     })
     .catch((error) => {
       console.log(error);
@@ -136,6 +162,39 @@ app.post("/restaurants", authenticateUser, (req, res) => {
     });
 });
 
+app.post(
+  "/users/favorite/:restaurantId",
+  authenticateUser,
+  (req, res) => {
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.id;
+    userService
+      .addFavoriteRestaurant(userId, restaurantId)
+      .then((restaurant) => {
+        res.status(201).send(restaurant);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+);
+app.post(
+  "/users/mood/:restaurantId",
+  authenticateUser,
+  (req, res) => {
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.id;
+    const mood = req.query.mood;
+    userService
+      .addMood(userId, restaurantId, mood)
+      .then((restaurant) => {
+        res.status(201).send(restaurant);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+);
 app.post(
   "/api/restaurants/upload",
   authenticateUser,

@@ -69,10 +69,10 @@ function getRestaurants(
   }
   const sortQuery = {};
   if (sortBy === "rating-desc") {
-    sortQuery.rating = -1;
+    sortQuery.reviewStars = -1;
   }
   if (sortBy === "rating-asc") {
-    sortQuery.rating = 1;
+    sortQuery.reviewStars = 1;
   }
   if (sortBy === "name") {
     sortQuery.name = 1;
