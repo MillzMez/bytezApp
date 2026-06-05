@@ -163,15 +163,15 @@ app.post("/restaurants", authenticateUser, (req, res) => {
 });
 
 app.post(
-  "/users/favorite/:restaurantId",
+  "/users/favorites/:restaurantId",
   authenticateUser,
   (req, res) => {
     const restaurantId = req.params.restaurantId;
     const userId = req.user.id;
     userService
       .addFavoriteRestaurant(userId, restaurantId)
-      .then((restaurant) => {
-        res.status(201).send(restaurant);
+      .then((user) => {
+        res.status(201).send(user);
       })
       .catch((error) => {
         console.log(error);
@@ -179,19 +179,40 @@ app.post(
   }
 );
 app.post(
-  "/users/mood/:restaurantId",
+  "/users/moods/:restaurantId",
   authenticateUser,
   (req, res) => {
     const restaurantId = req.params.restaurantId;
     const userId = req.user.id;
-    const mood = req.query.mood;
+    const { mood } = req.body;
     userService
       .addMood(userId, restaurantId, mood)
-      .then((restaurant) => {
-        res.status(201).send(restaurant);
+      .then((user) => {
+        res.status(201).send(user);
       })
       .catch((error) => {
         console.log(error);
+        res.status(400).send(error.message);
+      });
+  }
+);
+
+app.post(
+  "/users/notes/:restaurantId",
+  authenticateUser,
+  (req, res) => {
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.id;
+    const { note } = req.body;
+
+    userService
+      .addPersonalNote(userId, restaurantId, note)
+      .then((user) => {
+        res.status(201).send(user);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).send(error.message);
       });
   }
 );
