@@ -17,18 +17,19 @@ const RestaurantSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
-    priceRange: {
-      type: String,
+    price: {
+      type: Number,
       required: true,
-      trim: true
+      min: [1, "price must be between 1 and 4"],
+      max: [4, "price must be between 1 and 4"]
     },
-    reviewStars: {
+    rating: {
       type: Number,
       default: 0,
-      min: [0, "review must be between 0 and 5 stars"],
-      max: [5, "review must be between 0 and 5 stars"]
+      min: [0, "rating must be between 0 and 5 stars"],
+      max: [5, "rating must be between 0 and 5 stars"]
     },
-    reviewCount: {
+    reviews: {
       type: Number,
       default: 0
     },
