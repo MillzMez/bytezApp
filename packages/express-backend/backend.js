@@ -10,7 +10,8 @@ import XLSX from "xlsx";
 
 import {
   generateAccessToken,
-  authenticateUser
+  authenticateUser,
+  requireDeveloperUploadKey
 } from "./auth.js";
 
 dotenv.config();
@@ -94,10 +95,10 @@ app.get("/restaurants", authenticateUser, (req, res) => {
   const cuisine = req.query.cuisine;
   const search = req.query.search;
   const sortBy = req.query.sortBy;
-  const priceRange = req.query.priceRange;
-  const reviewStars = req.query.reviewStars;
+  const price = req.query.price;
+  const rating = req.query.rating;
   const occasion = req.query.occasion;
-  const reviewCount = req.query.reviewCount;
+  const reviews = req.query.reviews;
   const averagePriceSpent = req.query.averagePriceSpent;
   const moods = req.query.moods;
   const hasNotes = req.query.hasNotes;
@@ -107,9 +108,9 @@ app.get("/restaurants", authenticateUser, (req, res) => {
     .getRestaurants(
       search,
       cuisine,
-      priceRange,
-      reviewStars,
-      reviewCount,
+      price,
+      rating,
+      reviews,
       averagePriceSpent,
       occasion,
       sortBy
@@ -299,6 +300,7 @@ app.delete(
 app.post(
   "/api/restaurants/upload",
   authenticateUser,
+  requireDeveloperUploadKey,
   upload.single("file"),
   async (req, res) => {
     try {
@@ -317,11 +319,15 @@ app.post(
         name: row.name,
         address: row.address,
         cuisine: row.cuisine,
-        priceRange: row.priceRange,
-        reviewStars: Number(row.reviewStars),
-        reviewCount: Number(row.reviewCount),
+        price: row.price
+          ? Number(row.price)
+          : String(row.priceRange || "").length,
+        rating: Number(row.rating ?? row.reviewStars),
+        reviews: Number(row.reviews ?? row.reviewCount),
         averagePriceSpent: Number(row.averagePriceSpent),
-        occasion: row.occasion
+        occasion: String(
+          row.occasion || row.occasions || ""
+        ).trim()
       }));
 
       await Restaurant.deleteMany({});

@@ -54,3 +54,22 @@ export function authenticateUser(req, res, next) {
     }
   );
 }
+
+// Middleware to restrict routes to developers only
+export function requireDeveloperUploadKey(req, res, next) {
+  const devUploadKey = req.headers["x-dev-upload-key"];
+
+  if (!process.env.DEV_UPLOAD_KEY) {
+    return res.status(500).json({
+      message: "DEV_UPLOAD_KEY is not configured"
+    });
+  }
+
+  if (!devUploadKey || devUploadKey !== process.env.DEV_UPLOAD_KEY) {
+    return res.status(403).json({
+      message: "Developer upload access required"
+    });
+  }
+
+  next();
+}

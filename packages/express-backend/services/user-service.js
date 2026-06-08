@@ -1,5 +1,5 @@
 import UserModel from "../models/users.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
 async function createUser(user) {

@@ -3,16 +3,14 @@ import restaurantModel from "../models/restaurants.js";
 function getRestaurants(
   search,
   cuisine,
-  priceRange,
-  reviewStars,
-  reviewCount,
+  price,
+  rating,
+  reviews,
   averagePriceSpent,
   occasion,
   sortBy
 ) {
-  // TODO implement number filters
   const query = {};
-  const prices = ["$", "$$", "$$$", "$$$$"];
 
   if (search) {
     query.$or = [
@@ -41,38 +39,43 @@ function getRestaurants(
       $in: cuisine.split(",")
     };
   }
-  if (priceRange) {
-    query.priceRange = {
-      $in: prices[priceRange]
+  if (price) {
+    query.price = {
+      $in: String(price)
+        .split(",")
+        .map((value) => Number(value.trim()))
+        .filter((value) => !Number.isNaN(value))
     };
   }
-  if (reviewStars) {
-    query.reviewStars = {
-      $gte: reviewStars
+  if (rating) {
+    query.rating = {
+      $gte: Number(rating)
     };
   }
-  if (reviewCount) {
-    query.reviewCount = {
-      $gte: reviewCount
+  if (reviews) {
+    query.reviews = {
+      $gte: Number(reviews)
     };
   }
   if (averagePriceSpent) {
+    const averagePrice = Number(averagePriceSpent);
+
     query.averagePriceSpent = {
-      $gte: Math.max(averagePriceSpent - 2, 0),
-      $lte: averagePriceSpent + 2
+      $gte: Math.max(averagePrice - 2, 0),
+      $lte: averagePrice + 2
     };
   }
   if (occasion) {
     query.occasion = {
-      $in: occasion.split(",")
+      $in: occasion.split(",").map((value) => value.trim())
     };
   }
   const sortQuery = {};
   if (sortBy === "rating-desc") {
-    sortQuery.reviewStars = -1;
+    sortQuery.rating = -1;
   }
   if (sortBy === "rating-asc") {
-    sortQuery.reviewStars = 1;
+    sortQuery.rating = 1;
   }
   if (sortBy === "name") {
     sortQuery.name = 1;
@@ -83,9 +86,15 @@ function getRestaurants(
   if (sortBy === "priceHigh") {
     sortQuery.averagePriceSpent = -1;
   }
-  // TODO figure out how to sort by price
+  if (sortBy === "price-rating-low") {
+    sortQuery.price = 1;
+  }
+  if (sortBy === "price-rating-high") {
+    sortQuery.price = -1;
+  }
   return restaurantModel.find(query).sort(sortQuery);
 }
+
 function addRestaurant(restaurant) {
   const restaurantToAdd = new restaurantModel(restaurant);
   const promise = restaurantToAdd.save();
