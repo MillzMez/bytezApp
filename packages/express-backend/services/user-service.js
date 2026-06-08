@@ -60,6 +60,21 @@ function addFavoriteRestaurant(userId, restaurantId) {
     .populate("moods.restaurant");
 }
 
+function removeFavoriteRestaurant(userId, restaurantId) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $pull: {
+        favoriteRestaurants: restaurantId
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
 function addPersonalNote(userId, restaurantId, note) {
   return UserModel.findByIdAndUpdate(
     userId,
@@ -78,6 +93,41 @@ function addPersonalNote(userId, restaurantId, note) {
     .populate("moods.restaurant");
 }
 
+function removePersonalNote(userId, noteId) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $pull: {
+        personalNotes: {
+          _id: noteId
+        }
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
+function updatePersonalNote(userId, noteId, note) {
+  return UserModel.findOneAndUpdate(
+    {
+      _id: userId,
+      "personalNotes._id": noteId
+    },
+    {
+      $set: {
+        "personalNotes.$.note": note
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
 function addMood(userId, restaurantId, mood) {
   return UserModel.findByIdAndUpdate(
     userId,
@@ -86,6 +136,23 @@ function addMood(userId, restaurantId, mood) {
         moods: {
           restaurant: restaurantId,
           mood
+        }
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
+function removeMood(userId, moodId) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $pull: {
+        moods: {
+          _id: moodId
         }
       }
     },
@@ -284,8 +351,12 @@ export default {
   findUserByUsername,
   verifyUserPassword,
   addFavoriteRestaurant,
+  removeFavoriteRestaurant,
   addPersonalNote,
+  updatePersonalNote,
+  removePersonalNote,
   addMood,
+  removeMood,
   addUserRestaurantData,
   getSavedRestaurants
 };

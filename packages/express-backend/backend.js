@@ -163,11 +163,12 @@ app.post("/restaurants", authenticateUser, (req, res) => {
 });
 
 app.post(
-  "/users/favorites/:restaurantId",
+  "/users/me/favorites/:restaurantId",
   authenticateUser,
   (req, res) => {
     const restaurantId = req.params.restaurantId;
     const userId = req.user.id;
+
     userService
       .addFavoriteRestaurant(userId, restaurantId)
       .then((user) => {
@@ -175,16 +176,37 @@ app.post(
       })
       .catch((error) => {
         console.log(error);
+        res.status(400).send(error.message);
       });
   }
 );
-app.post(
-  "/users/moods/:restaurantId",
+
+app.delete(
+  "/users/me/favorites/:restaurantId",
   authenticateUser,
   (req, res) => {
     const restaurantId = req.params.restaurantId;
     const userId = req.user.id;
-    const { mood } = req.body;
+
+    userService
+      .removeFavoriteRestaurant(userId, restaurantId)
+      .then((user) => {
+        res.status(200).send(user);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).send(error.message);
+      });
+  }
+);
+
+app.post(
+  "/users/me/moods",
+  authenticateUser,
+  (req, res) => {
+    const userId = req.user.id;
+    const { restaurantId, mood } = req.body;
+
     userService
       .addMood(userId, restaurantId, mood)
       .then((user) => {
@@ -197,13 +219,31 @@ app.post(
   }
 );
 
-app.post(
-  "/users/notes/:restaurantId",
+app.delete(
+  "/users/me/moods/:moodId",
   authenticateUser,
   (req, res) => {
-    const restaurantId = req.params.restaurantId;
     const userId = req.user.id;
-    const { note } = req.body;
+    const moodId = req.params.moodId;
+
+    userService
+      .removeMood(userId, moodId)
+      .then((user) => {
+        res.status(200).send(user);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).send(error.message);
+      });
+  }
+);
+
+app.post(
+  "/users/me/notes",
+  authenticateUser,
+  (req, res) => {
+    const userId = req.user.id;
+    const { restaurantId, note } = req.body;
 
     userService
       .addPersonalNote(userId, restaurantId, note)
@@ -216,6 +256,46 @@ app.post(
       });
   }
 );
+
+app.put(
+  "/users/me/notes/:noteId",
+  authenticateUser,
+  (req, res) => {
+    const userId = req.user.id;
+    const noteId = req.params.noteId;
+    const { note } = req.body;
+
+    userService
+      .updatePersonalNote(userId, noteId, note)
+      .then((user) => {
+        res.status(200).send(user);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).send(error.message);
+      });
+  }
+);
+
+app.delete(
+  "/users/me/notes/:noteId",
+  authenticateUser,
+  (req, res) => {
+    const userId = req.user.id;
+    const noteId = req.params.noteId;
+
+    userService
+      .removePersonalNote(userId, noteId)
+      .then((user) => {
+        res.status(200).send(user);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).send(error.message);
+      });
+  }
+);
+
 app.post(
   "/api/restaurants/upload",
   authenticateUser,
