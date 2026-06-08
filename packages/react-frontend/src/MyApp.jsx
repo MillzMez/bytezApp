@@ -10,7 +10,7 @@ import RandomPickModal from "./RandomPickModal";
 import Toast from "./Toast";
 import { fromBackend, toBackend } from "./restaurantAdapter";
 
-const API_PREFIX = "http://localhost:3000";
+const API_PREFIX = "https://bytez-api-fwgsard0b8h0bjcf.westus3-01.azurewebsites.net";
 const INVALID_TOKEN = "INVALID_TOKEN";
 const TOKEN_STORAGE_KEY = "bytez.token";
 
