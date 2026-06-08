@@ -4,13 +4,6 @@ const priceSymbol = (p) => "$".repeat(p);
 
 const MOOD_OPTIONS = ["Happy", "Sad", "Angry", "Chill/Neutral"];
 
-const MOOD_EMOJI = {
-  Happy: "😊",
-  Sad: "😢",
-  Angry: "😠",
-  "Chill/Neutral": "😌"
-};
-
 function RestaurantList({
   restaurants,
   loading,
@@ -180,8 +173,7 @@ function RestaurantRow({
             }>
             {activeMoods.length
               ? activeMoods
-                  .map((m) => MOOD_EMOJI[m] || m)
-                  .join(" ")
+                  .join(", ")
               : "+ Mood"}
           </button>
         </td>
@@ -292,7 +284,7 @@ function RestaurantRow({
                       key={mood}
                       className={`mood-chip ${activeMoods.includes(mood) ? "mood-chip--active" : ""}`}
                       onClick={() => toggleMood(mood)}>
-                      {MOOD_EMOJI[mood]} {mood}
+                      {mood}
                     </button>
                   ))}
                 </div>

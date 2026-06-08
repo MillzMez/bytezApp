@@ -20,12 +20,9 @@ const OCCASIONS = [
 ];
 const MOODS = [
   "Happy",
-  "Cozy",
-  "Adventurous",
-  "Romantic",
-  "Energetic",
-  "Comfort",
-  "Celebratory"
+  "Sad",
+  "Angry",
+  "Chill/Neutral"
 ];
 
 function AddRestaurantModal({ onClose, onSubmit }) {

@@ -1,6 +1,6 @@
 import React from "react";
 
-function RandomPickModal({ restaurant, onClose }) {
+function RandomPickModal({ restaurant, onClose, onRandomize }) {
   function handleBackdropClick(e) {
     if (e.target === e.currentTarget) onClose();
   }
@@ -42,7 +42,13 @@ function RandomPickModal({ restaurant, onClose }) {
         <div className="form-actions">
           <button
             type="button"
-            className="btn-primary"
+            className="btn-secondary"
+	    onClick={onRandomize}>
+	      🎲 Pick Again
+	    </button>
+	    <button
+	      type="button"
+	      className="btn-primary"
             onClick={onClose}>
             Close
           </button>

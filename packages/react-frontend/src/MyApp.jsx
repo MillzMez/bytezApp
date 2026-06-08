@@ -335,6 +335,7 @@ function MyApp() {
         <RandomPickModal
           restaurant={randomPick}
           onClose={() => setRandomPick(null)}
+	  onRandomize={pickRandom}
         />
       )}
       <Toast message={message} onDismiss={clearMessage} />

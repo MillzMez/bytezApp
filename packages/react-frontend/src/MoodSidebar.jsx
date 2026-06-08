@@ -2,12 +2,9 @@ import React from "react";
 
 const MOODS = [
   "Happy",
-  "Cozy",
-  "Adventurous",
-  "Romantic",
-  "Energetic",
-  "Comfort",
-  "Celebratory"
+  "Sad",
+  "Angry",
+  "Chill/Neutral"
 ];
 
 function MoodSidebar({ selectedMoods, onToggleMood }) {
