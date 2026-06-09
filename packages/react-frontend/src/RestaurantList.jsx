@@ -14,8 +14,7 @@ function RestaurantList({
   onSortChange,
   favorites,
   onToggleFavorite,
-  onUpdateRestaurant,
-  onDeleteRestaurant
+  onUpdateRestaurant
 }) {
   return (
     <main className="main-content">
@@ -73,7 +72,6 @@ function RestaurantList({
                 <th>Reviews</th>
                 <th>Mood</th>
                 <th>Notes</th>
-                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -84,7 +82,6 @@ function RestaurantList({
                   isFavorite={favorites.includes(r.id)}
                   onToggleFavorite={onToggleFavorite}
                   onUpdateRestaurant={onUpdateRestaurant}
-                  onDeleteRestaurant={onDeleteRestaurant}
                 />
               ))}
             </tbody>
@@ -110,12 +107,10 @@ function RestaurantRow({
   isFavorite,
   onToggleFavorite,
   onUpdateRestaurant,
-  onDeleteRestaurant
 }) {
   const r = restaurant;
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showMoodModal, setShowMoodModal] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [notesDraft, setNotesDraft] = useState(r.notes || "");
 
   function saveNotes() {
@@ -189,21 +184,12 @@ function RestaurantRow({
             {r.notes ? "📝 Notes" : "+ Notes"}
           </button>
         </td>
-        <td>
-          <button
-            className="row-delete-btn"
-            onClick={() => setConfirmDelete(true)}
-            title="Delete restaurant"
-            aria-label="Delete restaurant">
-            ×
-          </button>
-        </td>
       </tr>
 
       {showNotesModal && (
         <tr className="modal-row">
           <td
-            colSpan={8}
+            colSpan={7}
             style={{ padding: 0, border: "none" }}>
             <div
               className="modal-backdrop"
@@ -255,7 +241,7 @@ function RestaurantRow({
       {showMoodModal && (
         <tr className="modal-row">
           <td
-            colSpan={8}
+            colSpan={7}
             style={{ padding: 0, border: "none" }}>
             <div
               className="modal-backdrop"
@@ -294,55 +280,6 @@ function RestaurantRow({
                     className="btn-primary"
                     onClick={() => setShowMoodModal(false)}>
                     Done
-                  </button>
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>
-      )}
-
-      {confirmDelete && (
-        <tr className="modal-row">
-          <td
-            colSpan={8}
-            style={{ padding: 0, border: "none" }}>
-            <div
-              className="modal-backdrop"
-              onClick={() => setConfirmDelete(false)}>
-              <div
-                className="modal"
-                onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h3>Delete {r.name}?</h3>
-                  <button
-                    className="modal-close"
-                    onClick={() => setConfirmDelete(false)}>
-                    ×
-                  </button>
-                </div>
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "#666",
-                    marginBottom: 14
-                  }}>
-                  This removes the restaurant from the database
-                  for everyone.
-                </p>
-                <div className="form-actions">
-                  <button
-                    className="btn-secondary"
-                    onClick={() => setConfirmDelete(false)}>
-                    Cancel
-                  </button>
-                  <button
-                    className="btn-danger"
-                    onClick={() => {
-                      setConfirmDelete(false);
-                      onDeleteRestaurant(r.id);
-                    }}>
-                    Delete
                   </button>
                 </div>
               </div>
