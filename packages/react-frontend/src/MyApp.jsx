@@ -10,7 +10,8 @@ import RandomPickModal from "./RandomPickModal";
 import Toast from "./Toast";
 import { fromBackend, toBackend } from "./restaurantAdapter";
 
-const API_PREFIX = "https://bytez-api-fwgsard0b8h0bjcf.westus3-01.azurewebsites.net";
+const API_PREFIX =
+  "https://bytez-api-fwgsard0b8h0bjcf.westus3-01.azurewebsites.net";
 const INVALID_TOKEN = "INVALID_TOKEN";
 const TOKEN_STORAGE_KEY = "bytez.token";
 
@@ -74,9 +75,12 @@ function MyApp() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_PREFIX}/restaurants`, {
-        headers: addAuthHeader()
-      });
+      const response = await fetch(
+        `${API_PREFIX}/restaurants`,
+        {
+          headers: addAuthHeader()
+        }
+      );
 
       if (response.status === 401) {
         logout();
@@ -349,7 +353,7 @@ function MyApp() {
         <RandomPickModal
           restaurant={randomPick}
           onClose={() => setRandomPick(null)}
-	  onRandomize={pickRandom}
+          onRandomize={pickRandom}
         />
       )}
       <Toast message={message} onDismiss={clearMessage} />

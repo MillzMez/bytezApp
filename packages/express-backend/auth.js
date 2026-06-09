@@ -65,7 +65,10 @@ export function requireDeveloperUploadKey(req, res, next) {
     });
   }
 
-  if (!devUploadKey || devUploadKey !== process.env.DEV_UPLOAD_KEY) {
+  if (
+    !devUploadKey ||
+    devUploadKey !== process.env.DEV_UPLOAD_KEY
+  ) {
     return res.status(403).json({
       message: "Developer upload access required"
     });

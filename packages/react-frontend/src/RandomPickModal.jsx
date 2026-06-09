@@ -43,12 +43,12 @@ function RandomPickModal({ restaurant, onClose, onRandomize }) {
           <button
             type="button"
             className="btn-secondary"
-	    onClick={onRandomize}>
-	      🎲 Pick Again
-	    </button>
-	    <button
-	      type="button"
-	      className="btn-primary"
+            onClick={onRandomize}>
+            🎲 Pick Again
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
             onClick={onClose}>
             Close
           </button>

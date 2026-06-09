@@ -217,24 +217,20 @@ app.delete(
   }
 );
 
-app.post(
-  "/users/me/moods",
-  authenticateUser,
-  (req, res) => {
-    const userId = req.user.id;
-    const { restaurantId, mood } = req.body;
+app.post("/users/me/moods", authenticateUser, (req, res) => {
+  const userId = req.user.id;
+  const { restaurantId, mood } = req.body;
 
-    userService
-      .addMood(userId, restaurantId, mood)
-      .then((user) => {
-        res.status(201).send(user);
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(400).send(error.message);
-      });
-  }
-);
+  userService
+    .addMood(userId, restaurantId, mood)
+    .then((user) => {
+      res.status(201).send(user);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).send(error.message);
+    });
+});
 
 app.delete(
   "/users/me/moods/:moodId",
@@ -255,24 +251,20 @@ app.delete(
   }
 );
 
-app.post(
-  "/users/me/notes",
-  authenticateUser,
-  (req, res) => {
-    const userId = req.user.id;
-    const { restaurantId, note } = req.body;
+app.post("/users/me/notes", authenticateUser, (req, res) => {
+  const userId = req.user.id;
+  const { restaurantId, note } = req.body;
 
-    userService
-      .addPersonalNote(userId, restaurantId, note)
-      .then((user) => {
-        res.status(201).send(user);
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(400).send(error.message);
-      });
-  }
-);
+  userService
+    .addPersonalNote(userId, restaurantId, note)
+    .then((user) => {
+      res.status(201).send(user);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).send(error.message);
+    });
+});
 
 app.put(
   "/users/me/notes/:noteId",

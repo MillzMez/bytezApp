@@ -8,8 +8,8 @@ function LoginPage({ onLogin, onSignup, message }) {
 
   function handleSubmit() {
     if (!email || !password) return;
-	  
-    const creds = {username: email, password};
+
+    const creds = { username: email, password };
 
     if (isSignUp) {
       onSignup(creds);

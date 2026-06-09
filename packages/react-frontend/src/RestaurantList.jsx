@@ -2,8 +2,18 @@ import React, { useState } from "react";
 
 const priceSymbol = (p) => "$".repeat(p);
 
-const MOOD_OPTIONS = ["Happy", "Sad", "Angry", "Chill/Neutral", "Cozy", "Adventurous", "Romantic",
-                                                              "Energetic", "Comfort","Celebratory"];
+const MOOD_OPTIONS = [
+  "Happy",
+  "Sad",
+  "Angry",
+  "Chill/Neutral",
+  "Cozy",
+  "Adventurous",
+  "Romantic",
+  "Energetic",
+  "Comfort",
+  "Celebratory"
+];
 
 function RestaurantList({
   restaurants,
@@ -106,7 +116,7 @@ function RestaurantRow({
   restaurant,
   isFavorite,
   onToggleFavorite,
-  onUpdateRestaurant,
+  onUpdateRestaurant
 }) {
   const r = restaurant;
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -168,8 +178,7 @@ function RestaurantRow({
                 : "Set mood"
             }>
             {activeMoods.length
-              ? activeMoods
-                  .join(", ")
+              ? activeMoods.join(", ")
               : "+ Mood"}
           </button>
         </td>
