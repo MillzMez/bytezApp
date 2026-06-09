@@ -2,7 +2,8 @@ import React, { useState } from "react";
 
 const priceSymbol = (p) => "$".repeat(p);
 
-const MOOD_OPTIONS = ["Happy", "Sad", "Angry", "Chill/Neutral"];
+const MOOD_OPTIONS = ["Happy", "Sad", "Angry", "Chill/Neutral", "Cozy", "Adventurous", "Romantic",
+                                                              "Energetic", "Comfort","Celebratory"];
 
 function RestaurantList({
   restaurants,
