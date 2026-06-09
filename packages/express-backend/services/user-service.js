@@ -1,9 +1,6 @@
 import UserModel from "../models/users.js";
 import bcrypt from "bcryptjs";
-<<<<<<< HEAD
 import mongoose from "mongoose";
-=======
->>>>>>> origin/main
 
 async function createUser(user) {
   const hashedPassword = await bcrypt.hash(user.password, 10);
