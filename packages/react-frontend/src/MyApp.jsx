@@ -10,7 +10,7 @@ import RandomPickModal from "./RandomPickModal";
 import Toast from "./Toast";
 import { fromBackend, toBackend } from "./restaurantAdapter";
 
-const API_PREFIX = "http://localhost:3000";
+const API_PREFIX = "https://bytez-api-fwgsard0b8h0bjcf.westus3-01.azurewebsites.net";
 const INVALID_TOKEN = "INVALID_TOKEN";
 const TOKEN_STORAGE_KEY = "bytez.token";
 
@@ -70,13 +70,25 @@ function MyApp() {
   const clearMessage = useCallback(() => setMessage(""), []);
 
   const loadRestaurants = useCallback(async () => {
+    if (token === INVALID_TOKEN) return;
+
     setLoading(true);
     try {
-      const response = await fetch(`${API_PREFIX}/restaurants`);
+      const response = await fetch(`${API_PREFIX}/restaurants`, {
+        headers: addAuthHeader()
+      });
+
+      if (response.status === 401) {
+        logout();
+        setMessage("Session expired. Please log in again.");
+        return;
+      }
+
       if (!response.ok) {
         setMessage("Could not load restaurants");
         return;
       }
+
       const data = await response.json();
       setRestaurants(data.map(fromBackend));
     } catch (error) {
@@ -84,7 +96,7 @@ function MyApp() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (loggedIn) {
@@ -252,7 +264,9 @@ function MyApp() {
     if (r.rating < filters.minRating) return false;
     if (
       filters.occasions.length &&
-      !filters.occasions.some((o) => r.occasions.includes(o))
+      !filters.occasions.some((o) =>
+        (r.occasion || "").includes(o)
+      )
     )
       return false;
     if (

@@ -1,5 +1,9 @@
 import UserModel from "../models/users.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+<<<<<<< HEAD
+import mongoose from "mongoose";
+=======
+>>>>>>> origin/main
 
 async function createUser(user) {
   const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -59,6 +63,21 @@ function addFavoriteRestaurant(userId, restaurantId) {
     .populate("moods.restaurant");
 }
 
+function removeFavoriteRestaurant(userId, restaurantId) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $pull: {
+        favoriteRestaurants: restaurantId
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
 function addPersonalNote(userId, restaurantId, note) {
   return UserModel.findByIdAndUpdate(
     userId,
@@ -68,6 +87,41 @@ function addPersonalNote(userId, restaurantId, note) {
           restaurant: restaurantId,
           note
         }
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
+function removePersonalNote(userId, noteId) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $pull: {
+        personalNotes: {
+          _id: noteId
+        }
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
+function updatePersonalNote(userId, noteId, note) {
+  return UserModel.findOneAndUpdate(
+    {
+      _id: userId,
+      "personalNotes._id": noteId
+    },
+    {
+      $set: {
+        "personalNotes.$.note": note
       }
     },
     { new: true }
@@ -95,6 +149,99 @@ function addMood(userId, restaurantId, mood) {
     .populate("moods.restaurant");
 }
 
+function removeMood(userId, moodId) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $pull: {
+        moods: {
+          _id: moodId
+        }
+      }
+    },
+    { new: true }
+  )
+    .populate("favoriteRestaurants")
+    .populate("personalNotes.restaurant")
+    .populate("moods.restaurant");
+}
+
+async function addUserRestaurantData(
+  restaurants,
+  userId,
+  sortBy,
+  filterMood,
+  hasNotes
+) {
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    console.log(
+      `User ${userId} not found in add_user_restaurant_data`
+    );
+    return restaurants;
+  }
+  const favIds = new Set(
+    user.favoriteRestaurants.map((id) => id.toString())
+  );
+  const notesMap = new Map();
+  const moodMap = new Map();
+
+  for (const note of user.personalNotes) {
+    notesMap.set(note.restaurant.toString(), note.note);
+  }
+  for (const mood of user.moods) {
+    const resId = mood.restaurant.toString();
+
+    if (!moodMap.has(resId)) {
+      moodMap.set(resId, []);
+    }
+    moodMap.get(resId).push(mood.mood);
+  }
+
+  let result = restaurants.map((restaurant) => {
+    const resId = restaurant._id.toString();
+
+    return {
+      ...restaurant.toObject(),
+      favorite: favIds.has(resId),
+      notes: notesMap.get(resId) || null,
+      moods: moodMap.get(resId) || []
+    };
+  });
+
+  result = filter_restaurant_data(
+    result,
+    sortBy,
+    filterMood,
+    hasNotes
+  );
+  return result;
+}
+
+function filter_restaurant_data(
+  restaurants,
+  sortBy,
+  mood,
+  hasNotes
+) {
+  let result = restaurants;
+
+  if (mood?.length) {
+    result = result.filter((r) =>
+      r.moods.some((m) => mood.includes(m))
+    );
+  }
+
+  if (hasNotes) {
+    result = result.filter((r) => r.notes !== null);
+  }
+
+  if (sortBy === "favorites") {
+    result = result.sort((a, b) => b.favorite - a.favorite);
+  }
+
+  return result;
+}
 function getSavedRestaurants(userId) {
   return UserModel.aggregate([
     {
@@ -151,7 +298,7 @@ function getSavedRestaurants(userId) {
                   favorite: {
                     $in: [
                       "$$restaurant._id",
-                      "favoriteRestaurants"
+                      "$favoriteRestaurants"
                     ]
                   },
                   notes: {
@@ -207,6 +354,12 @@ export default {
   findUserByUsername,
   verifyUserPassword,
   addFavoriteRestaurant,
+  removeFavoriteRestaurant,
   addPersonalNote,
-  addMood
+  updatePersonalNote,
+  removePersonalNote,
+  addMood,
+  removeMood,
+  addUserRestaurantData,
+  getSavedRestaurants
 };
