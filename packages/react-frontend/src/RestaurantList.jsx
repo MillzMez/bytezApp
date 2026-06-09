@@ -80,6 +80,7 @@ function RestaurantList({
                 <th>Cuisine</th>
                 <th>Price Range</th>
                 <th>Reviews</th>
+		<th>Occasion</th>
                 <th>Mood</th>
                 <th>Notes</th>
               </tr>
@@ -169,6 +170,11 @@ function RestaurantRow({
           </div>
         </td>
         <td>
+	  {r.occasion && r.occasion.trim()
+	      ? r.occasion
+	      : <span style={{ color: "#bbb" }}>—</span>}
+	    </td>
+	  <td>
           <button
             className="tag-btn"
             onClick={() => setShowMoodModal(true)}
