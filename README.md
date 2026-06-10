@@ -33,9 +33,9 @@ You can also create a new account from the login screen with the
 
 The interface was prototyped in Figma before implementation.
 
-- Prototype: <!-- TODO: paste Figma prototype link -->
-- Last updated:
-  <!-- TODO: date you last updated the prototype -->
+- Prototype:
+  [Bytez — Main Page (Figma)](https://www.figma.com/make/goPO0vggSXGVmtNpk5NyqH/Bytes--Main-page?fullscreen=1&t=m1GkVEdHuBU9Utov-1)
+- Last updated: 2026-06-09
 
 ---
 
