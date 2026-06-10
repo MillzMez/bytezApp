@@ -12,10 +12,10 @@ Express + MongoDB backend secured with JWT authentication.
 
 ## Live App
 
-| Part     | URL                                                                        |
-| -------- | -------------------------------------------------------------------------- |
-| Frontend | <!-- TODO: paste the deployed Azure frontend URL --> _(deployed on Azure)_ |
-| Backend  | https://bytez-api-fwgsard0b8h0bjcf.westus3-01.azurewebsites.net            |
+| Part     | URL                                                             |
+| -------- | --------------------------------------------------------------- |
+| Frontend | https://polite-meadow-0583e4810.7.azurestaticapps.net           |
+| Backend  | https://bytez-api-fwgsard0b8h0bjcf.westus3-01.azurewebsites.net |
 
 ### Test User
 
