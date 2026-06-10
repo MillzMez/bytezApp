@@ -75,32 +75,81 @@ function MyApp() {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_PREFIX}/restaurants`,
-        {
+      const [restRes, notesRes, moodsRes] = await Promise.all([
+        fetch(`${API_PREFIX}/restaurants`, {
           headers: addAuthHeader()
-        }
-      );
+        }),
+        fetch(`${API_PREFIX}/users/me/notes`, {
+          headers: addAuthHeader()
+        }),
+        fetch(`${API_PREFIX}/users/me/moods`, {
+          headers: addAuthHeader()
+        })
+      ]);
 
-      if (response.status === 401) {
+      if (restRes.status === 401) {
         logout();
         setMessage("Session expired. Please log in again.");
         return;
       }
 
-      if (!response.ok) {
+      if (!restRes.ok) {
         setMessage("Could not load restaurants");
         return;
       }
 
-      const data = await response.json();
-      setRestaurants(data.map(fromBackend));
+      const data = await restRes.json();
+      const notes = notesRes.ok ? await notesRes.json() : [];
+      const moods = moodsRes.ok ? await moodsRes.json() : [];
+
+      const noteIdByRestaurant = {};
+      for (const n of notes) {
+        const rid = n.restaurant?._id || n.restaurant;
+        noteIdByRestaurant[rid] = n._id;
+      }
+
+      const moodEntriesByRestaurant = {};
+      for (const m of moods) {
+        const rid = m.restaurant?._id || m.restaurant;
+        if (!moodEntriesByRestaurant[rid]) {
+          moodEntriesByRestaurant[rid] = [];
+        }
+        moodEntriesByRestaurant[rid].push({
+          id: m._id,
+          mood: m.mood
+        });
+      }
+
+      const list = data.map((doc) => {
+        const r = fromBackend(doc);
+        return {
+          ...r,
+          noteId: noteIdByRestaurant[r.id] || null,
+          moodEntries: moodEntriesByRestaurant[r.id] || []
+        };
+      });
+
+      setRestaurants(list);
+      setFavorites(
+        list.filter((r) => r.favorite).map((r) => r.id)
+      );
     } catch (error) {
       setMessage(`Load error: ${error.message}`);
     } finally {
       setLoading(false);
     }
   }, [token]);
+
+  // Returns the _id of the most recent personalNotes/moods subdocument
+  // belonging to a restaurant, used after a POST to capture the new id.
+  function latestSubdocId(list, restaurantId) {
+    const matches = (list || []).filter((item) => {
+      const rid = item.restaurant?._id || item.restaurant;
+      return rid === restaurantId;
+    });
+    const last = matches[matches.length - 1];
+    return last ? last._id : null;
+  }
 
   useEffect(() => {
     if (loggedIn) {
@@ -177,12 +226,156 @@ function MyApp() {
     }));
   }
 
-  function toggleFavorite(id) {
+  async function toggleFavorite(id) {
+    const wasFavorite = favorites.includes(id);
+
+    // Optimistically update, then revert if the request fails.
     setFavorites((prev) =>
-      prev.includes(id)
-        ? prev.filter((f) => f !== id)
-        : [...prev, id]
+      wasFavorite ? prev.filter((f) => f !== id) : [...prev, id]
     );
+
+    try {
+      const response = await fetch(
+        `${API_PREFIX}/users/me/favorites/${id}`,
+        {
+          method: wasFavorite ? "DELETE" : "POST",
+          headers: addAuthHeader()
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("request failed");
+      }
+    } catch (error) {
+      setFavorites((prev) =>
+        wasFavorite
+          ? [...prev, id]
+          : prev.filter((f) => f !== id)
+      );
+      setMessage(`Favorite error: ${error.message}`);
+    }
+  }
+
+  // Create, update, or delete the logged-in user's note for a restaurant.
+  async function saveNote(restaurantId, text) {
+    const restaurant = restaurants.find(
+      (r) => r.id === restaurantId
+    );
+    const noteId = restaurant?.noteId || null;
+    const trimmed = (text || "").trim();
+
+    try {
+      if (!trimmed && noteId) {
+        const response = await fetch(
+          `${API_PREFIX}/users/me/notes/${noteId}`,
+          { method: "DELETE", headers: addAuthHeader() }
+        );
+        if (!response.ok) throw new Error("request failed");
+        updateRestaurant(restaurantId, {
+          notes: "",
+          noteId: null
+        });
+        setMessage("Note removed");
+        return;
+      }
+
+      if (!trimmed) return;
+
+      if (noteId) {
+        const response = await fetch(
+          `${API_PREFIX}/users/me/notes/${noteId}`,
+          {
+            method: "PUT",
+            headers: addAuthHeader({
+              "Content-Type": "application/json"
+            }),
+            body: JSON.stringify({ note: trimmed })
+          }
+        );
+        if (!response.ok) throw new Error("request failed");
+        updateRestaurant(restaurantId, { notes: trimmed });
+      } else {
+        const response = await fetch(
+          `${API_PREFIX}/users/me/notes`,
+          {
+            method: "POST",
+            headers: addAuthHeader({
+              "Content-Type": "application/json"
+            }),
+            body: JSON.stringify({
+              restaurantId,
+              note: trimmed
+            })
+          }
+        );
+        if (!response.ok) throw new Error("request failed");
+        const user = await response.json();
+        updateRestaurant(restaurantId, {
+          notes: trimmed,
+          noteId: latestSubdocId(
+            user.personalNotes,
+            restaurantId
+          )
+        });
+      }
+
+      setMessage("Note saved");
+    } catch (error) {
+      setMessage(`Note error: ${error.message}`);
+    }
+  }
+
+  // Add or remove one of the logged-in user's moods for a restaurant.
+  async function toggleRestaurantMood(restaurantId, mood) {
+    const restaurant = restaurants.find(
+      (r) => r.id === restaurantId
+    );
+    if (!restaurant) return;
+
+    const entry = (restaurant.moodEntries || []).find(
+      (m) => m.mood === mood
+    );
+
+    try {
+      if (entry) {
+        const response = await fetch(
+          `${API_PREFIX}/users/me/moods/${entry.id}`,
+          { method: "DELETE", headers: addAuthHeader() }
+        );
+        if (!response.ok) throw new Error("request failed");
+        updateRestaurant(restaurantId, {
+          moods: restaurant.moods.filter((m) => m !== mood),
+          moodEntries: restaurant.moodEntries.filter(
+            (m) => m.mood !== mood
+          )
+        });
+      } else {
+        const response = await fetch(
+          `${API_PREFIX}/users/me/moods`,
+          {
+            method: "POST",
+            headers: addAuthHeader({
+              "Content-Type": "application/json"
+            }),
+            body: JSON.stringify({ restaurantId, mood })
+          }
+        );
+        if (!response.ok) throw new Error("request failed");
+        const user = await response.json();
+        updateRestaurant(restaurantId, {
+          moods: [...restaurant.moods, mood],
+          moodEntries: [
+            ...(restaurant.moodEntries || []),
+            {
+              id: latestSubdocId(user.moods, restaurantId),
+              mood
+            }
+          ]
+        });
+      }
+    } catch (error) {
+      setMessage(`Mood error: ${error.message}`);
+    }
   }
 
   async function addRestaurant(newR) {
@@ -201,16 +394,46 @@ function MyApp() {
       if (response.status === 201 || response.status === 200) {
         const saved = await response.json();
         const adapted = fromBackend(saved);
-        // Keep the mood and notes the user typed in the modal since the
-        // backend Restaurant schema does not store them yet.
+
         setRestaurants((prev) => [
           ...prev,
-          {
-            ...adapted,
-            mood: newR.mood || [],
-            notes: newR.notes || ""
-          }
+          { ...adapted, noteId: null, moodEntries: [] }
         ]);
+
+        // Moods and notes are per-user, so persist any the user typed in
+        // the modal, then reload to pick up their generated ids.
+        const moodsToAdd = newR.mood || [];
+        const noteToAdd = (newR.notes || "").trim();
+        if (moodsToAdd.length || noteToAdd) {
+          await Promise.all([
+            ...moodsToAdd.map((mood) =>
+              fetch(`${API_PREFIX}/users/me/moods`, {
+                method: "POST",
+                headers: addAuthHeader({
+                  "Content-Type": "application/json"
+                }),
+                body: JSON.stringify({
+                  restaurantId: adapted.id,
+                  mood
+                })
+              })
+            ),
+            noteToAdd
+              ? fetch(`${API_PREFIX}/users/me/notes`, {
+                  method: "POST",
+                  headers: addAuthHeader({
+                    "Content-Type": "application/json"
+                  }),
+                  body: JSON.stringify({
+                    restaurantId: adapted.id,
+                    note: noteToAdd
+                  })
+                })
+              : Promise.resolve()
+          ]);
+          await loadRestaurants();
+        }
+
         setMessage("Restaurant added");
       } else if (response.status === 401) {
         setMessage("You must be logged in to add restaurants");
@@ -275,7 +498,7 @@ function MyApp() {
       return false;
     if (
       filters.moods.length &&
-      !filters.moods.some((m) => r.mood?.includes(m))
+      !filters.moods.some((m) => r.moods?.includes(m))
     )
       return false;
     if (filters.hasNotes && !(r.notes && r.notes.trim()))
@@ -331,7 +554,8 @@ function MyApp() {
           onSortChange={setSortBy}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
-          onUpdateRestaurant={updateRestaurant}
+          onSaveNote={saveNote}
+          onToggleRestaurantMood={toggleRestaurantMood}
           onDeleteRestaurant={deleteRestaurant}
         />
         <MoodSidebar

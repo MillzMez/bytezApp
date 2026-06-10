@@ -18,7 +18,12 @@ export function fromBackend(doc) {
     rating: Number(doc.rating ?? doc.reviewStars) || 0,
     reviews: Number(doc.reviews ?? doc.reviewCount) || 0,
     occasion: doc.occasion || "",
-    mood: Array.isArray(doc.mood) ? doc.mood : [],
+    favorite: Boolean(doc.favorite),
+    moods: Array.isArray(doc.moods)
+      ? doc.moods
+      : Array.isArray(doc.mood)
+        ? doc.mood
+        : [],
     notes: doc.notes || ""
   };
 }

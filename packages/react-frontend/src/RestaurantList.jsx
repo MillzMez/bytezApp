@@ -24,7 +24,8 @@ function RestaurantList({
   onSortChange,
   favorites,
   onToggleFavorite,
-  onUpdateRestaurant
+  onSaveNote,
+  onToggleRestaurantMood
 }) {
   return (
     <main className="main-content">
@@ -80,7 +81,7 @@ function RestaurantList({
                 <th>Cuisine</th>
                 <th>Price Range</th>
                 <th>Reviews</th>
-		<th>Occasion</th>
+                <th>Occasion</th>
                 <th>Mood</th>
                 <th>Notes</th>
               </tr>
@@ -92,7 +93,10 @@ function RestaurantList({
                   restaurant={r}
                   isFavorite={favorites.includes(r.id)}
                   onToggleFavorite={onToggleFavorite}
-                  onUpdateRestaurant={onUpdateRestaurant}
+                  onSaveNote={onSaveNote}
+                  onToggleRestaurantMood={
+                    onToggleRestaurantMood
+                  }
                 />
               ))}
             </tbody>
@@ -117,7 +121,8 @@ function RestaurantRow({
   restaurant,
   isFavorite,
   onToggleFavorite,
-  onUpdateRestaurant
+  onSaveNote,
+  onToggleRestaurantMood
 }) {
   const r = restaurant;
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -125,19 +130,15 @@ function RestaurantRow({
   const [notesDraft, setNotesDraft] = useState(r.notes || "");
 
   function saveNotes() {
-    onUpdateRestaurant(r.id, { notes: notesDraft });
+    onSaveNote(r.id, notesDraft);
     setShowNotesModal(false);
   }
 
   function toggleMood(mood) {
-    const current = r.mood || [];
-    const updated = current.includes(mood)
-      ? current.filter((m) => m !== mood)
-      : [...current, mood];
-    onUpdateRestaurant(r.id, { mood: updated });
+    onToggleRestaurantMood(r.id, mood);
   }
 
-  const activeMoods = r.mood || [];
+  const activeMoods = r.moods || [];
 
   return (
     <>
@@ -170,11 +171,13 @@ function RestaurantRow({
           </div>
         </td>
         <td>
-	  {r.occasion && r.occasion.trim()
-	      ? r.occasion
-	      : <span style={{ color: "#bbb" }}>—</span>}
-	    </td>
-	  <td>
+          {r.occasion && r.occasion.trim() ? (
+            r.occasion
+          ) : (
+            <span style={{ color: "#bbb" }}>—</span>
+          )}
+        </td>
+        <td>
           <button
             className="tag-btn"
             onClick={() => setShowMoodModal(true)}
