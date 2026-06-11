@@ -4,7 +4,6 @@ function LoginPage({ onLogin, onSignup, message }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
 
   function handleSubmit() {
     if (!email || !password) return;
@@ -42,16 +41,6 @@ function LoginPage({ onLogin, onSignup, message }) {
             Sign Up
           </button>
         </div>
-
-        {isSignUp && (
-          <input
-            className="login-input"
-            type="text"
-            placeholder="Full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        )}
         <input
           className="login-input"
           type="text"
