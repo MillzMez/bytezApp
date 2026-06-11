@@ -7,6 +7,7 @@ import userService from "./services/user-service.js";
 import Restaurant from "./models/restaurants.js";
 import multer from "multer";
 import XLSX from "xlsx";
+import fs from "fs/promises";
 
 import {
   generateAccessToken,
@@ -17,14 +18,34 @@ import {
 dotenv.config();
 const { MONGODB_URI } = process.env;
 
-mongoose.set("debug", true);
+mongoose.set("debug", process.env.NODE_ENV !== "production");
 mongoose
   .connect(MONGODB_URI)
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((error) => console.log(error));
 
 const app = express();
-const upload = multer({ dest: "uploads/" });
+const upload = multer({
+  dest: "uploads/",
+  limits: {
+    fileSize: 2 * 1024 * 1024
+  },
+  fileFilter(req, file, callback) {
+    const allowedMimeTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/csv"
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      return callback(null, true);
+    }
+
+    return callback(
+      new Error("Only Excel or CSV files are allowed")
+    );
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
@@ -311,6 +332,8 @@ app.post(
   requireDeveloperUploadKey,
   upload.single("file"),
   async (req, res) => {
+    let uploadedFilePath;
+
     try {
       if (!req.file) {
         return res
@@ -318,35 +341,79 @@ app.post(
           .json({ error: "No file uploaded" });
       }
 
-      const workbook = XLSX.readFile(req.file.path);
+      uploadedFilePath = req.file.path;
+
+      const workbook = XLSX.readFile(uploadedFilePath);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(worksheet);
 
+      if (!rows.length) {
+        return res.status(400).json({
+          error: "Uploaded spreadsheet must contain at least one restaurant"
+        });
+      }
+
+      const requiredColumns = ["name", "address", "cuisine"];
+      const missingColumns = requiredColumns.filter(
+        (column) => !Object.prototype.hasOwnProperty.call(rows[0], column)
+      );
+
+      if (missingColumns.length) {
+        return res.status(400).json({
+          error: `Missing required columns: ${missingColumns.join(", ")}`
+        });
+      }
+
       const restaurants = rows.map((row) => ({
-        name: row.name,
-        address: row.address,
-        cuisine: row.cuisine,
+        name: String(row.name || "").trim(),
+        address: String(row.address || "").trim(),
+        cuisine: String(row.cuisine || "").trim(),
         price: row.price
           ? Number(row.price)
           : String(row.priceRange || "").length,
-        rating: Number(row.rating ?? row.reviewStars),
-        reviews: Number(row.reviews ?? row.reviewCount),
-        averagePriceSpent: Number(row.averagePriceSpent),
+        rating: Number(row.rating ?? row.reviewStars ?? 0),
+        reviews: Number(row.reviews ?? row.reviewCount ?? 0),
+        averagePriceSpent: Number(row.averagePriceSpent ?? 0),
         occasion: String(
           row.occasion || row.occasions || ""
         ).trim()
       }));
+
+      const invalidRestaurant = restaurants.find(
+        (restaurant) =>
+          !restaurant.name ||
+          !restaurant.address ||
+          !restaurant.cuisine ||
+          Number.isNaN(restaurant.price) ||
+          Number.isNaN(restaurant.rating) ||
+          Number.isNaN(restaurant.reviews) ||
+          Number.isNaN(restaurant.averagePriceSpent)
+      );
+
+      if (invalidRestaurant) {
+        return res.status(400).json({
+          error:
+            "Uploaded spreadsheet contains invalid restaurant data"
+        });
+      }
 
       await Restaurant.deleteMany({});
       const result = await Restaurant.insertMany(restaurants);
 
       res.json({
         message: "Restaurants uploaded successfully",
-        insertedCount: result.insertedCount
+        insertedCount: result.length
       });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Restaurant upload failed", err);
+      res.status(500).json({
+        error: "Restaurant upload failed"
+      });
+    } finally {
+      if (uploadedFilePath) {
+        await fs.unlink(uploadedFilePath).catch(() => {});
+      }
     }
   }
 );
