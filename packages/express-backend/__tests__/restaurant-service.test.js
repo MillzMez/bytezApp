@@ -49,39 +49,46 @@ describe("restaurantService", () => {
   });
 
   test("findRestaurantByID finds a restaurant by id", async () => {
-    const restaurant = await restaurantService.findRestaurantByID(
-      testRestaurant._id
-    );
+    const restaurant =
+      await restaurantService.findRestaurantByID(
+        testRestaurant._id
+      );
 
     expect(restaurant.name).toBe("Test Restaurant");
   });
 
   test("deleteRestaurantById deletes a restaurant", async () => {
-    const deletedRestaurant = await restaurantService.deleteRestaurantById(
+    const deletedRestaurant =
+      await restaurantService.deleteRestaurantById(
+        testRestaurant._id
+      );
+    const foundRestaurant = await RestaurantModel.findById(
       testRestaurant._id
     );
-    const foundRestaurant = await RestaurantModel.findById(testRestaurant._id);
 
     expect(deletedRestaurant.name).toBe("Test Restaurant");
     expect(foundRestaurant).toBeNull();
   });
 
   test("getRestaurants searches by name", async () => {
-    const restaurants = await restaurantService.getRestaurants("Test");
+    const restaurants =
+      await restaurantService.getRestaurants("Test");
 
     expect(restaurants).toHaveLength(1);
     expect(restaurants[0].name).toBe("Test Restaurant");
   });
 
   test("getRestaurants searches by cuisine", async () => {
-    const restaurants = await restaurantService.getRestaurants("Mexican");
+    const restaurants =
+      await restaurantService.getRestaurants("Mexican");
 
     expect(restaurants).toHaveLength(1);
     expect(restaurants[0].cuisine).toBe("Mexican");
   });
 
   test("getRestaurants searches by address", async () => {
-    const restaurants = await restaurantService.getRestaurants("123");
+    const restaurants =
+      await restaurantService.getRestaurants("123");
 
     expect(restaurants).toHaveLength(1);
     expect(restaurants[0].address).toBe("123 Test Street");
@@ -137,7 +144,9 @@ describe("restaurantService", () => {
     );
 
     expect(restaurants).toHaveLength(2);
-    expect(restaurants[0].rating).toBeGreaterThan(restaurants[1].rating);
+    expect(restaurants[0].rating).toBeGreaterThan(
+      restaurants[1].rating
+    );
   });
 
   test("getRestaurants sorts by rating ascending", async () => {
@@ -164,7 +173,9 @@ describe("restaurantService", () => {
     );
 
     expect(restaurants).toHaveLength(2);
-    expect(restaurants[0].rating).toBeLessThan(restaurants[1].rating);
+    expect(restaurants[0].rating).toBeLessThan(
+      restaurants[1].rating
+    );
   });
 
   test("getRestaurants sorts by name", async () => {
@@ -272,7 +283,9 @@ describe("restaurantService", () => {
       "price-rating-low"
     );
 
-    expect(restaurants[0].price).toBeLessThan(restaurants[1].price);
+    expect(restaurants[0].price).toBeLessThan(
+      restaurants[1].price
+    );
   });
 
   test("getRestaurants sorts by price rating high to low", async () => {
@@ -298,6 +311,8 @@ describe("restaurantService", () => {
       "price-rating-high"
     );
 
-    expect(restaurants[0].price).toBeGreaterThan(restaurants[1].price);
+    expect(restaurants[0].price).toBeGreaterThan(
+      restaurants[1].price
+    );
   });
 });

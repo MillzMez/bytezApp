@@ -91,7 +91,9 @@ describe("userService", () => {
       password: "password123"
     });
 
-    const foundUser = await userService.findUserById(createdUser._id);
+    const foundUser = await userService.findUserById(
+      createdUser._id
+    );
 
     expect(foundUser.username).toBe("testuser");
   });
@@ -102,7 +104,8 @@ describe("userService", () => {
       password: "password123"
     });
 
-    const user = await userService.findUserByUsername("testuser");
+    const user =
+      await userService.findUserByUsername("testuser");
 
     expect(user.username).toBe("testuser");
   });
@@ -113,21 +116,34 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addFavoriteRestaurant(user._id, testRestaurant._id);
+    await userService.addFavoriteRestaurant(
+      user._id,
+      testRestaurant._id
+    );
     await userService.addPersonalNote(
       user._id,
       testRestaurant._id,
       "Great tacos"
     );
-    await userService.addMood(user._id, testRestaurant._id, "happy");
+    await userService.addMood(
+      user._id,
+      testRestaurant._id,
+      "happy"
+    );
 
     const users = await userService.getUsers();
 
     expect(users).toHaveLength(1);
     expect(users[0].username).toBe("testuser");
-    expect(users[0].favoriteRestaurants[0].name).toBe("Test Restaurant");
-    expect(users[0].personalNotes[0].restaurant.name).toBe("Test Restaurant");
-    expect(users[0].moods[0].restaurant.name).toBe("Test Restaurant");
+    expect(users[0].favoriteRestaurants[0].name).toBe(
+      "Test Restaurant"
+    );
+    expect(users[0].personalNotes[0].restaurant.name).toBe(
+      "Test Restaurant"
+    );
+    expect(users[0].moods[0].restaurant.name).toBe(
+      "Test Restaurant"
+    );
   });
 
   test("addFavoriteRestaurant adds a restaurant to the user's favorites", async () => {
@@ -142,10 +158,12 @@ describe("userService", () => {
     );
 
     expect(updatedUser.favoriteRestaurants).toHaveLength(1);
-    expect(updatedUser.favoriteRestaurants[0]._id.toString()).toBe(
-      testRestaurant._id.toString()
+    expect(
+      updatedUser.favoriteRestaurants[0]._id.toString()
+    ).toBe(testRestaurant._id.toString());
+    expect(updatedUser.favoriteRestaurants[0].name).toBe(
+      "Test Restaurant"
     );
-    expect(updatedUser.favoriteRestaurants[0].name).toBe("Test Restaurant");
   });
 
   test("removeFavoriteRestaurant removes a restaurant from the user's favorites", async () => {
@@ -154,12 +172,16 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addFavoriteRestaurant(user._id, testRestaurant._id);
-
-    const updatedUser = await userService.removeFavoriteRestaurant(
+    await userService.addFavoriteRestaurant(
       user._id,
       testRestaurant._id
     );
+
+    const updatedUser =
+      await userService.removeFavoriteRestaurant(
+        user._id,
+        testRestaurant._id
+      );
 
     expect(updatedUser.favoriteRestaurants).toHaveLength(0);
   });
@@ -177,11 +199,15 @@ describe("userService", () => {
     );
 
     expect(updatedUser.personalNotes).toHaveLength(1);
-    expect(updatedUser.personalNotes[0].note).toBe("Great tacos");
-    expect(updatedUser.personalNotes[0].restaurant._id.toString()).toBe(
-      testRestaurant._id.toString()
+    expect(updatedUser.personalNotes[0].note).toBe(
+      "Great tacos"
     );
-    expect(updatedUser.personalNotes[0].restaurant.name).toBe("Test Restaurant");
+    expect(
+      updatedUser.personalNotes[0].restaurant._id.toString()
+    ).toBe(testRestaurant._id.toString());
+    expect(updatedUser.personalNotes[0].restaurant.name).toBe(
+      "Test Restaurant"
+    );
   });
 
   test("updatePersonalNote updates an existing personal note", async () => {
@@ -204,7 +230,9 @@ describe("userService", () => {
       "Amazing tacos"
     );
 
-    expect(updatedUser.personalNotes[0].note).toBe("Amazing tacos");
+    expect(updatedUser.personalNotes[0].note).toBe(
+      "Amazing tacos"
+    );
   });
 
   test("removePersonalNote removes an existing personal note", async () => {
@@ -246,7 +274,9 @@ describe("userService", () => {
     expect(updatedUser.moods[0].restaurant._id.toString()).toBe(
       testRestaurant._id.toString()
     );
-    expect(updatedUser.moods[0].restaurant.name).toBe("Test Restaurant");
+    expect(updatedUser.moods[0].restaurant.name).toBe(
+      "Test Restaurant"
+    );
   });
 
   test("removeMood removes an existing mood", async () => {
@@ -263,7 +293,10 @@ describe("userService", () => {
 
     const moodId = userWithMood.moods[0]._id;
 
-    const updatedUser = await userService.removeMood(user._id, moodId);
+    const updatedUser = await userService.removeMood(
+      user._id,
+      moodId
+    );
 
     expect(updatedUser.moods).toHaveLength(0);
   });
@@ -274,13 +307,20 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addFavoriteRestaurant(user._id, testRestaurant._id);
+    await userService.addFavoriteRestaurant(
+      user._id,
+      testRestaurant._id
+    );
     await userService.addPersonalNote(
       user._id,
       testRestaurant._id,
       "Great tacos"
     );
-    await userService.addMood(user._id, testRestaurant._id, "happy");
+    await userService.addMood(
+      user._id,
+      testRestaurant._id,
+      "happy"
+    );
 
     const restaurants = await RestaurantModel.find({});
     const result = await userService.addUserRestaurantData(
@@ -313,7 +353,11 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addMood(user._id, testRestaurant._id, "happy");
+    await userService.addMood(
+      user._id,
+      testRestaurant._id,
+      "happy"
+    );
 
     const restaurants = await RestaurantModel.find({});
     const result = await userService.addUserRestaurantData(
@@ -369,9 +413,14 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addFavoriteRestaurant(user._id, secondRestaurant._id);
+    await userService.addFavoriteRestaurant(
+      user._id,
+      secondRestaurant._id
+    );
 
-    const restaurants = await RestaurantModel.find({}).sort({ name: 1 });
+    const restaurants = await RestaurantModel.find({}).sort({
+      name: 1
+    });
     const result = await userService.addUserRestaurantData(
       restaurants,
       user._id,
@@ -390,14 +439,22 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addFavoriteRestaurant(user._id, testRestaurant._id);
+    await userService.addFavoriteRestaurant(
+      user._id,
+      testRestaurant._id
+    );
 
-    const savedRestaurants = await userService.getSavedRestaurants(user._id);
+    const savedRestaurants =
+      await userService.getSavedRestaurants(user._id);
 
     expect(savedRestaurants).toHaveLength(1);
     expect(savedRestaurants[0].restaurants).toHaveLength(1);
-    expect(savedRestaurants[0].restaurants[0].name).toBe("Test Restaurant");
-    expect(savedRestaurants[0].restaurants[0].favorite).toBe(true);
+    expect(savedRestaurants[0].restaurants[0].name).toBe(
+      "Test Restaurant"
+    );
+    expect(savedRestaurants[0].restaurants[0].favorite).toBe(
+      true
+    );
   });
 
   test("getSavedRestaurants returns favorites notes and moods", async () => {
@@ -406,19 +463,33 @@ describe("userService", () => {
       password: "password123"
     });
 
-    await userService.addFavoriteRestaurant(user._id, testRestaurant._id);
+    await userService.addFavoriteRestaurant(
+      user._id,
+      testRestaurant._id
+    );
     await userService.addPersonalNote(
       user._id,
       testRestaurant._id,
       "Great tacos"
     );
-    await userService.addMood(user._id, testRestaurant._id, "happy");
+    await userService.addMood(
+      user._id,
+      testRestaurant._id,
+      "happy"
+    );
 
-    const savedRestaurants = await userService.getSavedRestaurants(user._id);
+    const savedRestaurants =
+      await userService.getSavedRestaurants(user._id);
 
     expect(savedRestaurants).toHaveLength(1);
-    expect(savedRestaurants[0].restaurants[0].favorite).toBe(true);
-    expect(savedRestaurants[0].restaurants[0].notes).toEqual(["Great tacos"]);
-    expect(savedRestaurants[0].restaurants[0].moods).toEqual(["happy"]);
+    expect(savedRestaurants[0].restaurants[0].favorite).toBe(
+      true
+    );
+    expect(savedRestaurants[0].restaurants[0].notes).toEqual([
+      "Great tacos"
+    ]);
+    expect(savedRestaurants[0].restaurants[0].moods).toEqual([
+      "happy"
+    ]);
   });
 });

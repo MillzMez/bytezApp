@@ -365,13 +365,15 @@ app.post(
 
       if (!rows.length) {
         return res.status(400).json({
-          error: "Uploaded spreadsheet must contain at least one restaurant"
+          error:
+            "Uploaded spreadsheet must contain at least one restaurant"
         });
       }
 
       const requiredColumns = ["name", "address", "cuisine"];
       const missingColumns = requiredColumns.filter(
-        (column) => !Object.prototype.hasOwnProperty.call(rows[0], column)
+        (column) =>
+          !Object.prototype.hasOwnProperty.call(rows[0], column)
       );
 
       if (missingColumns.length) {
