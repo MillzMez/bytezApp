@@ -5,7 +5,7 @@
   "main": "backend.js",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --coverage",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "dev": "nodemon backend.js",
     "start": "node backend.js"
   },
