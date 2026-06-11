@@ -34,10 +34,24 @@ const upload = multer({
     const allowedMimeTypes = [
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
-      "text/csv"
+      "text/csv",
+      "application/csv",
+      "text/plain"
     ];
 
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    const isCsv = file.originalname
+      .toLowerCase()
+      .endsWith(".csv");
+
+    const isXlsx = file.originalname
+      .toLowerCase()
+      .endsWith(".xlsx");
+
+    if (
+      allowedMimeTypes.includes(file.mimetype) ||
+      isCsv ||
+      isXlsx
+    ) {
       return callback(null, true);
     }
 
@@ -46,6 +60,7 @@ const upload = multer({
     );
   }
 });
+
 const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
